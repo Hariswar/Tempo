@@ -26,6 +26,7 @@ interface AppState {
 
   // UI
   isSidebarCollapsed: boolean;
+  isDarkMode: boolean;
 
   // Actions
   setViewMode: (mode: ViewMode) => void;
@@ -50,6 +51,7 @@ interface AppState {
   addNotification: (n: Omit<Notification, 'id' | 'createdAt'>) => void;
 
   toggleSidebar: () => void;
+  toggleTheme: () => void;
 }
 
 let eventCounter = MOCK_EVENTS.length + 1;
@@ -69,6 +71,7 @@ export const useAppStore = create<AppState>()(
       notifications: MOCK_NOTIFICATIONS,
       user: MOCK_USER,
       isSidebarCollapsed: false,
+      isDarkMode: true,
 
       setViewMode: (mode) => set({ viewMode: mode }),
       setSelectedDate: (date) => set({ selectedDate: date }),
@@ -170,6 +173,19 @@ export const useAppStore = create<AppState>()(
 
       toggleSidebar: () =>
         set((s) => ({ isSidebarCollapsed: !s.isSidebarCollapsed })),
+
+      toggleTheme: () =>
+        set((s) => {
+          const next = !s.isDarkMode
+          if (next) {
+            document.documentElement.classList.add('dark')
+            document.documentElement.classList.remove('light')
+          } else {
+            document.documentElement.classList.remove('dark')
+            document.documentElement.classList.add('light')
+          }
+          return { isDarkMode: next }
+        }),
     }),
     {
       name: 'tempo-storage',
@@ -178,6 +194,7 @@ export const useAppStore = create<AppState>()(
         viewMode: state.viewMode,
         user: state.user,
         isSidebarCollapsed: state.isSidebarCollapsed,
+        isDarkMode: state.isDarkMode,
       }),
     }
   )

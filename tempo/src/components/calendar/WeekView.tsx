@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import {
   startOfWeek, endOfWeek, eachDayOfInterval, format,
-  isToday, addHours, startOfDay, isSameDay
+  isToday, isSameDay
 } from 'date-fns'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../../stores/appStore'
@@ -74,11 +74,11 @@ export default function WeekView() {
   const { selectedDate, events, selectEvent, openEventModal, setSelectedDate, viewMode } = useAppStore()
   const scrollRef = useRef<HTMLDivElement>(null)
   const now = new Date()
-  const currentDate = new Date(selectedDate)
 
   const days = useMemo(() => {
-    if (viewMode === 'day') return [currentDate]
-    const start = startOfWeek(currentDate, { weekStartsOn: 1 })
+    const d = new Date(selectedDate)
+    if (viewMode === 'day') return [d]
+    const start = startOfWeek(d, { weekStartsOn: 1 })
     return eachDayOfInterval({ start, end: endOfWeek(start, { weekStartsOn: 1 }) })
   }, [selectedDate, viewMode])
 
@@ -114,24 +114,32 @@ export default function WeekView() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Day header row */}
-      <div className="flex shrink-0" style={{ paddingLeft: 52, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div
+        className="flex shrink-0"
+        style={{ paddingLeft: 52, borderBottom: '1px solid var(--border-subtle)' }}
+      >
         {days.map((day) => (
           <div
             key={day.toISOString()}
             className="flex-1 text-center py-2 cursor-pointer"
-            onClick={() => { setSelectedDate(day.toISOString()) }}
+            onClick={() => setSelectedDate(day.toISOString())}
           >
-            <div className="text-[10px] font-medium text-text-muted uppercase tracking-wider">
+            <div
+              className="text-[10px] font-medium uppercase tracking-wider"
+              style={{ color: 'var(--text-muted)' }}
+            >
               {format(day, 'EEE')}
             </div>
             <div
               className={cn(
                 'mx-auto mt-1 w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold transition-all',
-                isToday(day)
-                  ? 'text-white'
-                  : 'text-text-secondary hover:bg-white/5'
+                isToday(day) ? 'text-white' : ''
               )}
-              style={isToday(day) ? { background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' } : {}}
+              style={
+                isToday(day)
+                  ? { background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }
+                  : { color: 'var(--text-secondary)' }
+              }
             >
               {format(day, 'd')}
             </div>
@@ -143,14 +151,14 @@ export default function WeekView() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'thin' }}>
         <div className="flex" style={{ minHeight: `${HOUR_HEIGHT * 24}px` }}>
           {/* Time gutter */}
-          <div className="shrink-0 w-13 relative" style={{ width: 52 }}>
+          <div className="shrink-0 relative" style={{ width: 52 }}>
             {HOURS.filter((h) => h >= START_HOUR).map((hour) => (
               <div
                 key={hour}
                 style={{ top: (hour - START_HOUR) * HOUR_HEIGHT, height: HOUR_HEIGHT }}
                 className="absolute w-full flex items-start justify-end pr-2 pt-1"
               >
-                <span className="text-[10px] text-text-muted font-mono">
+                <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
                   {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                 </span>
               </div>
@@ -164,18 +172,25 @@ export default function WeekView() {
               <div
                 key={day.toISOString()}
                 className="flex-1 relative min-w-0"
-                style={{ borderLeft: '1px solid rgba(255,255,255,0.04)' }}
+                style={{ borderLeft: '1px solid var(--grid-line)' }}
               >
-                {/* Hour grid lines */}
+                {/* Hour grid lines (click to create) */}
                 {HOURS.filter((h) => h >= START_HOUR).map((hour) => (
                   <div
                     key={hour}
-                    style={{ top: (hour - START_HOUR) * HOUR_HEIGHT, height: HOUR_HEIGHT }}
-                    className="absolute inset-x-0 border-t border-white/4 hover:bg-white/2 cursor-pointer transition-colors group"
+                    className="absolute inset-x-0 cursor-pointer group"
+                    style={{
+                      top: (hour - START_HOUR) * HOUR_HEIGHT,
+                      height: HOUR_HEIGHT,
+                      borderTop: '1px solid var(--grid-line)',
+                    }}
                     onClick={() => handleSlotClick(day, hour)}
                   >
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center">
-                      <span className="text-[10px] text-text-muted">+ Add</span>
+                    <div
+                      className="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center"
+                      style={{ background: 'var(--hover-overlay)' }}
+                    >
+                      <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>+ Add</span>
                     </div>
                   </div>
                 ))}
@@ -184,14 +199,10 @@ export default function WeekView() {
                 {HOURS.filter((h) => h >= START_HOUR).map((hour) => (
                   <div
                     key={`${hour}-half`}
+                    className="absolute inset-x-0 pointer-events-none"
                     style={{
                       top: (hour - START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2,
-                      height: 1,
-                    }}
-                    className="absolute inset-x-0"
-                    style={{
-                      top: (hour - START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2,
-                      borderTop: '1px dashed rgba(255,255,255,0.03)',
+                      borderTop: '1px dashed var(--grid-half)',
                     }}
                   />
                 ))}
@@ -203,10 +214,7 @@ export default function WeekView() {
 
                 {/* Current time indicator */}
                 {isToday(day) && nowTop > 0 && (
-                  <div
-                    className="time-indicator"
-                    style={{ top: nowTop }}
-                  />
+                  <div className="time-indicator" style={{ top: nowTop }} />
                 )}
               </div>
             )
@@ -255,12 +263,14 @@ function EventBlock({ ev, onClick }: { ev: ColumnEvent; onClick: () => void }) {
           {ev.title}
         </span>
         {!isShort && (
-          <span className="text-[10px] text-white/40 mt-0.5 truncate">
+          <span className="text-[10px] mt-0.5 truncate" style={{ color: `${color}80` }}>
             {format(new Date(ev.startUtc), 'h:mm')}–{format(new Date(ev.endUtc), 'h:mm a')}
           </span>
         )}
         {ev.locationLabel && !isTiny && (
-          <span className="text-[9px] text-white/30 truncate mt-0.5">📍 {ev.locationLabel}</span>
+          <span className="text-[9px] truncate mt-0.5" style={{ color: `${color}60` }}>
+            📍 {ev.locationLabel}
+          </span>
         )}
       </div>
     </motion.div>

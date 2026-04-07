@@ -1,8 +1,8 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, BarChart3, Settings, Sparkles, Bell,
-  ChevronLeft, ChevronRight, Zap, Clock
+  ChevronLeft, ChevronRight, Zap
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { cn } from '../../lib/utils'
@@ -23,7 +23,7 @@ export default function Sidebar() {
       animate={{ width: isSidebarCollapsed ? 64 : 240 }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
       className="flex flex-col h-full shrink-0 overflow-hidden"
-      style={{ background: '#0c0c18', borderRight: '1px solid rgba(255,255,255,0.06)' }}
+      style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--border-subtle)' }}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 pt-5 pb-4">
@@ -111,7 +111,7 @@ export default function Sidebar() {
             >
               <div
                 className="rounded-xl p-3"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
               >
                 <MiniCalendar />
               </div>

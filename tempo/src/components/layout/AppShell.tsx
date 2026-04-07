@@ -10,7 +10,7 @@ export default function AppShell() {
   const { isAIPanelOpen, isEventModalOpen } = useAppStore()
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden" style={{ background: '#08080f' }}>
+    <div className="flex h-screen w-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
       <Sidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">

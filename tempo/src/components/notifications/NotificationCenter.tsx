@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Bell, AlertTriangle, Lightbulb, Clock, Zap, Check } from 'lucide-react'
+import { Bell, AlertTriangle, Lightbulb, Clock, Zap } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { relativeTime } from '../../lib/utils'
 import type { Notification } from '../../types'
@@ -12,17 +12,17 @@ const TYPE_CONFIG = {
   ai:         { icon: Bell,          color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
 }
 
-export default function NotificationCenter({ onClose }: { onClose: () => void }) {
+export default function NotificationCenter({ onClose: _onClose }: { onClose: () => void }) {
   const { notifications, markNotificationRead, markAllNotificationsRead } = useAppStore()
   const unread = notifications.filter((n) => !n.read).length
 
   return (
     <div
       className="w-80 rounded-2xl overflow-hidden shadow-2xl"
-      style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.08)' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center gap-2">
           <Bell size={14} className="text-text-secondary" />
           <span className="text-sm font-semibold text-text-primary">Notifications</span>
@@ -84,7 +84,7 @@ function NotificationItem({
       onClick={onRead}
       className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-white/3"
       style={{
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        borderBottom: '1px solid var(--border-subtle)',
         opacity: notif.read ? 0.5 : 1,
       }}
     >
