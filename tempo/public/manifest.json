@@ -1,0 +1,21 @@
+{
+  "name": "Tempo — AI Calendar",
+  "short_name": "Tempo",
+  "description": "AI-powered agentic calendar that proactively schedules and optimizes your time",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08080f",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/tempo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [],
+  "related_applications": []
+}
