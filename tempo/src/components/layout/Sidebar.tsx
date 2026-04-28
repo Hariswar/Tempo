@@ -2,11 +2,12 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, BarChart3, Settings, Sparkles, Bell,
-  ChevronLeft, ChevronRight, X
+  ChevronLeft, ChevronRight, X, LogOut
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { cn } from '../../lib/utils'
 import MiniCalendar from '../calendar/MiniCalendar'
+import { logoutUser } from '../../services/authService'
 
 const NAV_ITEMS = [
   { to: '/', icon: Calendar, label: 'Calendar' },
@@ -28,6 +29,12 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
 
   function openNotificationsPage() {
     navigate('/notifications')
+    onCloseMobile?.()
+  }
+
+  function handleLogout() {
+    logoutUser()
+    navigate('/login')
     onCloseMobile?.()
   }
 
@@ -212,6 +219,22 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
             </AnimatePresence>
           </button>
         )}
+
+        <button
+          onClick={handleLogout}
+          className="sidebar-item w-full mt-1"
+          title={isCollapsed ? 'Log Out' : undefined}
+          style={{ color: '#f59e0b' }}
+        >
+          <LogOut size={14} className="shrink-0" />
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs">
+                Log Out
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
       </div>
     </motion.aside>
   )
