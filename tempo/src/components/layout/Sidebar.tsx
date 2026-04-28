@@ -36,7 +36,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
   function handleLogout() {
     logoutUser()
     switchAuthUser(null)
-    navigate('/login')
+    navigate('/auth')
     onCloseMobile?.()
   }
 

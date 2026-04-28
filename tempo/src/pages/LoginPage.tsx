@@ -20,7 +20,7 @@ export default function LoginPage() {
     try {
       const authUser = loginUser(email, password)
       switchAuthUser(authUser)
-      navigate('/')
+      navigate(authUser.onboardingPending ? '/onboarding' : '/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed.')
     } finally {
@@ -91,6 +91,9 @@ export default function LoginPage() {
           <p className="text-xs text-text-muted text-center pt-1">
             No account?{' '}
             <Link to="/signup" style={{ color: '#ffb347' }}>Sign up</Link>
+          </p>
+          <p className="text-xs text-text-muted text-center">
+            <Link to="/auth" style={{ color: 'var(--text-secondary)' }}>Back</Link>
           </p>
         </form>
       </motion.div>

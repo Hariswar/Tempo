@@ -66,7 +66,7 @@ interface AppState {
   toggleTheme: () => void;
 }
 
-const USER_DATA_KEY_PREFIX = 'tempo-user-data::';
+const USER_DATA_KEY_PREFIX = 'tempo-user-data-v2::';
 
 function normalizeEmail(email?: string | null): string | null {
   return email ? email.trim().toLowerCase() : null;
@@ -92,17 +92,9 @@ function buildStoreUser(authUser: AuthUser | null): User {
 }
 
 function defaultScopedState(authUser: AuthUser | null): UserScopedState {
-  if (authUser) {
-    return {
-      events: [],
-      notifications: [],
-      user: buildStoreUser(authUser),
-    };
-  }
-
   return {
-    events: [...MOCK_EVENTS],
-    notifications: [...MOCK_NOTIFICATIONS],
+    events: [],
+    notifications: [],
     user: buildStoreUser(authUser),
   };
 }
@@ -344,7 +336,7 @@ export const useAppStore = create<AppState>()(
       };
     },
     {
-      name: 'tempo-storage',
+      name: 'tempo-ui-storage-v2',
       partialize: (state) => ({
         viewMode: state.viewMode,
         isSidebarCollapsed: state.isSidebarCollapsed,

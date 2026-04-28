@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { User, Clock, Bell, Shield, Save } from 'lucide-react'
 import { useAppStore } from '../stores/appStore'
@@ -178,22 +177,6 @@ export default function SettingsPage() {
 
         {/* Auth placeholder */}
         <Section title="Security & Auth" icon={Shield}>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/login"
-              className="px-3 h-8 rounded-lg text-xs font-medium inline-flex items-center"
-              style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.3)', color: '#ffb347' }}
-            >
-              Log In
-            </Link>
-            <Link
-              to="/signup"
-              className="px-3 h-8 rounded-lg text-xs font-medium inline-flex items-center"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}
-            >
-              Sign Up
-            </Link>
-          </div>
           <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div>
               <div className="text-xs font-medium text-text-primary">Auth0 Integration</div>

@@ -17,7 +17,6 @@ export default function SignupPage() {
   const [quietStart, setQuietStart] = useState('23:00')
   const [quietEnd, setQuietEnd] = useState('07:00')
   const [travelBufferMinutes, setTravelBufferMinutes] = useState(30)
-  const [startTutorial, setStartTutorial] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -41,7 +40,7 @@ export default function SignupPage() {
         travelBufferMinutes,
       })
       switchAuthUser(authUser)
-      navigate(startTutorial ? '/onboarding' : '/')
+      navigate('/onboarding')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed.')
     } finally {
@@ -170,18 +169,9 @@ export default function SignupPage() {
             </label>
           </div>
 
-          <label className="flex items-start gap-2 rounded-lg p-2 cursor-pointer" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
-            <input
-              type="checkbox"
-              checked={startTutorial}
-              onChange={(e) => setStartTutorial(e.target.checked)}
-              className="mt-0.5"
-            />
-            <div>
-              <div className="text-xs font-medium text-text-primary">Start quick tutorial after sign up</div>
-              <div className="text-[11px] text-text-muted">Includes creating your first event and AI scheduling tips.</div>
-            </div>
-          </label>
+          <div className="text-[11px] px-3 py-2 rounded-lg" style={{ background: 'rgba(255,106,0,0.08)', border: '1px solid rgba(255,106,0,0.2)', color: '#ffb347' }}>
+            After sign up, you will be guided through a quick tutorial for adding events, AI scheduling, and notifications.
+          </div>
 
           {error && (
             <div className="text-xs px-3 py-2 rounded-lg" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
@@ -202,6 +192,9 @@ export default function SignupPage() {
           <p className="text-xs text-text-muted text-center pt-1">
             Already have an account?{' '}
             <Link to="/login" style={{ color: '#ffb347' }}>Log in</Link>
+          </p>
+          <p className="text-xs text-text-muted text-center">
+            <Link to="/auth" style={{ color: 'var(--text-secondary)' }}>Back</Link>
           </p>
         </form>
       </motion.div>

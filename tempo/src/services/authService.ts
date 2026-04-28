@@ -4,6 +4,7 @@ export interface AuthUser {
   email: string
   password: string
   profile?: AuthUserProfile
+  onboardingPending?: boolean
   createdAt: string
 }
 
@@ -75,6 +76,7 @@ export function signupUser(
       quietEnd: profileOverrides?.quietEnd ?? '07:00',
       travelBufferMinutes: profileOverrides?.travelBufferMinutes ?? 30,
     },
+    onboardingPending: true,
     createdAt: new Date().toISOString(),
   }
 
@@ -94,6 +96,24 @@ export function loginUser(email: string, password: string) {
 
   localStorage.setItem(SESSION_KEY, normalizedEmail)
   return user
+}
+
+export function isOnboardingPending(email: string): boolean {
+  const normalizedEmail = email.trim().toLowerCase()
+  const users = readUsers()
+  const user = users.find((u) => u.email.toLowerCase() === normalizedEmail)
+  return Boolean(user?.onboardingPending)
+}
+
+export function completeOnboarding(email: string): AuthUser | null {
+  const normalizedEmail = email.trim().toLowerCase()
+  const users = readUsers()
+  const idx = users.findIndex((u) => u.email.toLowerCase() === normalizedEmail)
+  if (idx < 0) return null
+  const updated = { ...users[idx], onboardingPending: false }
+  users[idx] = updated
+  writeUsers(users)
+  return updated
 }
 
 export function updateAuthUserProfile(

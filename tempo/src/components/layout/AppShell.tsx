@@ -8,6 +8,7 @@ import { useAppStore } from '../../stores/appStore'
 import { useIsMobile } from '../../lib/useIsMobile'
 import AIAssistantPanel from '../ai/AIAssistantPanel'
 import EventModal from '../calendar/EventModal'
+import TutorialCoach from '../onboarding/TutorialCoach'
 
 const MOBILE_NAV = [
   { to: '/', icon: Calendar, label: 'Calendar' },
@@ -306,6 +307,8 @@ export default function AppShell() {
       <AnimatePresence>
         {isEventModalOpen && <EventModal />}
       </AnimatePresence>
+
+      <TutorialCoach />
     </div>
   )
 }
