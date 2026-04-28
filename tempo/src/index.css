@@ -373,3 +373,41 @@ html.light .leaflet-popup-tip {
 html.light .leaflet-tile-pane {
   filter: brightness(1) contrast(1);
 }
+
+/* ── Mobile responsive ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Event modal goes full-screen on mobile */
+  .event-modal-wrapper {
+    padding: 0 !important;
+  }
+  .event-modal-wrapper > div {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  /* Scrollable calendar on smaller screens */
+  body {
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  /* Bigger touch targets for sidebar items */
+  .sidebar-item {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  /* Event cards need slightly bigger text on mobile */
+  .event-card {
+    min-height: 28px;
+  }
+
+  /* Mini calendar cells — larger for touch */
+  .mini-cal-day {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+}

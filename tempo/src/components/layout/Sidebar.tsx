@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, BarChart3, Settings, Sparkles, Bell,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, X
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { cn } from '../../lib/utils'
@@ -14,13 +14,20 @@ const NAV_ITEMS = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  onCloseMobile?: () => void
+}
+
+export default function Sidebar({ onCloseMobile }: SidebarProps) {
   const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user } = useAppStore()
   const unread = notifications.filter((n) => !n.read).length
 
+  // On mobile overlay, always show expanded
+  const isCollapsed = onCloseMobile ? false : isSidebarCollapsed
+
   return (
     <motion.aside
-      animate={{ width: isSidebarCollapsed ? 64 : 240 }}
+      animate={{ width: onCloseMobile ? 256 : (isCollapsed ? 64 : 240) }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
       className="flex flex-col h-full shrink-0 overflow-hidden"
       style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--border-subtle)' }}
@@ -35,19 +42,28 @@ export default function Sidebar() {
           />
         </div>
         <AnimatePresence>
-          {!isSidebarCollapsed && (
+          {!isCollapsed && (
             <motion.div
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
-              className="flex flex-col -gap-0.5"
+              className="flex flex-col -gap-0.5 flex-1"
             >
               <span className="text-sm font-semibold text-text-primary leading-none">Tempo</span>
               <span className="text-[10px] text-text-muted leading-none mt-0.5">AI Calendar</span>
             </motion.div>
           )}
         </AnimatePresence>
+        {/* Close button for mobile overlay */}
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors ml-auto"
+          >
+            <X size={16} className="text-text-muted" />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -60,11 +76,12 @@ export default function Sidebar() {
             className={({ isActive }) =>
               cn('sidebar-item', isActive ? 'active' : '')
             }
-            title={isSidebarCollapsed ? label : undefined}
+            title={isCollapsed ? label : undefined}
+            onClick={onCloseMobile}
           >
             <Icon size={16} className="shrink-0" />
             <AnimatePresence>
-              {!isSidebarCollapsed && (
+              {!isCollapsed && (
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -80,14 +97,14 @@ export default function Sidebar() {
 
         {/* AI Assistant */}
         <button
-          onClick={toggleAIPanel}
-          title={isSidebarCollapsed ? 'AI Assistant' : undefined}
+          onClick={() => { toggleAIPanel(); onCloseMobile?.() }}
+          title={isCollapsed ? 'AI Assistant' : undefined}
           className="sidebar-item text-left w-full"
           style={{ color: '#a78bfa' }}
         >
           <Sparkles size={16} className="shrink-0" />
           <AnimatePresence>
-            {!isSidebarCollapsed && (
+            {!isCollapsed && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -102,7 +119,7 @@ export default function Sidebar() {
 
         {/* Mini Calendar — only when expanded */}
         <AnimatePresence>
-          {!isSidebarCollapsed && (
+          {!isCollapsed && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -126,7 +143,7 @@ export default function Sidebar() {
         {/* Notifications badge */}
         <button
           className="sidebar-item w-full relative"
-          title={isSidebarCollapsed ? 'Notifications' : undefined}
+          title={isCollapsed ? 'Notifications' : undefined}
         >
           <div className="relative shrink-0">
             <Bell size={16} />
@@ -140,7 +157,7 @@ export default function Sidebar() {
             )}
           </div>
           <AnimatePresence>
-            {!isSidebarCollapsed && (
+            {!isCollapsed && (
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 Notifications
               </motion.span>
@@ -157,7 +174,7 @@ export default function Sidebar() {
             {user.displayName.charAt(0)}
           </div>
           <AnimatePresence>
-            {!isSidebarCollapsed && (
+            {!isCollapsed && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -171,21 +188,23 @@ export default function Sidebar() {
           </AnimatePresence>
         </div>
 
-        {/* Collapse button */}
-        <button
-          onClick={toggleSidebar}
-          className="sidebar-item w-full justify-center mt-1"
-          title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
-        >
-          {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          <AnimatePresence>
-            {!isSidebarCollapsed && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs">
-                Collapse
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </button>
+        {/* Collapse button — hide on mobile overlay */}
+        {!onCloseMobile && (
+          <button
+            onClick={toggleSidebar}
+            className="sidebar-item w-full justify-center mt-1"
+            title={isCollapsed ? 'Expand' : 'Collapse'}
+          >
+            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs">
+                  Collapse
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+        )}
       </div>
     </motion.aside>
   )

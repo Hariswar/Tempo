@@ -3,12 +3,17 @@ import { format, addWeeks, subWeeks, addDays, subDays, addMonths, subMonths } fr
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft, ChevronRight, Plus, Search, Bell,
-  LayoutGrid, Columns, Calendar, Sparkles, Sun, Moon
+  LayoutGrid, Columns, Calendar, Sparkles, Sun, Moon, Menu
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import NotificationCenter from '../notifications/NotificationCenter'
 
-export default function Header() {
+interface HeaderProps {
+  onMenuToggle?: () => void
+  isMobile?: boolean
+}
+
+export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
   const {
     viewMode, setViewMode, selectedDate, setSelectedDate,
     openEventModal, toggleAIPanel, notifications,
@@ -37,19 +42,30 @@ export default function Header() {
 
   const headerLabel =
     viewMode === 'day'
-      ? format(date, 'EEEE, MMMM d')
-      : format(date, 'MMMM yyyy')
+      ? format(date, isMobile ? 'EEE, MMM d' : 'EEEE, MMMM d')
+      : format(date, isMobile ? 'MMM yyyy' : 'MMMM yyyy')
 
   return (
     <header
-      className="flex items-center gap-3 px-4 h-14 shrink-0 transition-colors"
+      className="flex items-center gap-2 px-3 h-12 shrink-0 transition-colors"
       style={{
         borderBottom: '1px solid var(--border-subtle)',
         background: 'var(--header-bg)',
       }}
     >
+      {/* Mobile hamburger */}
+      {onMenuToggle && (
+        <button
+          onClick={onMenuToggle}
+          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors shrink-0"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          <Menu size={18} />
+        </button>
+      )}
+
       {/* Navigation */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         <button
           onClick={() => navigate(-1)}
           className="w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
@@ -70,7 +86,7 @@ export default function Header() {
         </button>
         <button
           onClick={goToToday}
-          className="px-2.5 h-7 text-xs font-medium rounded-lg transition-colors"
+          className="px-2 h-7 text-xs font-medium rounded-lg transition-colors"
           style={{ color: 'var(--text-secondary)' }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
@@ -80,26 +96,31 @@ export default function Header() {
       </div>
 
       {/* Date label */}
-      <h1 className="text-sm font-semibold min-w-[160px]" style={{ color: 'var(--text-primary)' }}>
+      <h1
+        className="text-sm font-semibold whitespace-nowrap"
+        style={{ color: 'var(--text-primary)', minWidth: isMobile ? undefined : 160 }}
+      >
         {headerLabel}
       </h1>
 
-      {/* Search */}
-      <div className="flex-1 max-w-xs">
-        <div className="relative">
-          <Search
-            size={13}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2"
-            style={{ color: 'var(--text-muted)' }}
-          />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search events…"
-            className="w-full pl-8 pr-3 h-7 text-xs rounded-lg outline-none transition-colors tempo-input"
-          />
+      {/* Search — hidden on mobile */}
+      {!isMobile && (
+        <div className="flex-1 max-w-xs">
+          <div className="relative">
+            <Search
+              size={13}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2"
+              style={{ color: 'var(--text-muted)' }}
+            />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search events…"
+              className="w-full pl-8 pr-3 h-7 text-xs rounded-lg outline-none transition-colors tempo-input"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex-1" />
 
@@ -133,7 +154,7 @@ export default function Header() {
       <button
         onClick={toggleTheme}
         title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+        className="w-8 h-8 flex items-center justify-center rounded-lg transition-all shrink-0"
         style={{
           background: 'var(--input-bg)',
           border: '1px solid var(--input-border)',
@@ -143,35 +164,37 @@ export default function Header() {
         {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
       </button>
 
-      {/* AI button */}
-      <button
-        onClick={toggleAIPanel}
-        className="flex items-center gap-1.5 px-3 h-7 text-xs font-medium rounded-lg transition-all hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(79,70,229,0.15))',
-          border: '1px solid rgba(124,58,237,0.3)',
-          color: '#a78bfa',
-        }}
-      >
-        <Sparkles size={12} />
-        <span>AI</span>
-      </button>
+      {/* AI button — desktop only (mobile has bottom nav) */}
+      {!isMobile && (
+        <button
+          onClick={toggleAIPanel}
+          className="flex items-center gap-1.5 px-3 h-7 text-xs font-medium rounded-lg transition-all hover:opacity-90"
+          style={{
+            background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(79,70,229,0.15))',
+            border: '1px solid rgba(124,58,237,0.3)',
+            color: '#a78bfa',
+          }}
+        >
+          <Sparkles size={12} />
+          <span>AI</span>
+        </button>
+      )}
 
       {/* New event */}
       <button
         onClick={() => openEventModal()}
-        className="flex items-center gap-1.5 px-3 h-7 text-xs font-semibold rounded-lg transition-all hover:opacity-90 text-white"
+        className="flex items-center gap-1.5 px-3 h-7 text-xs font-semibold rounded-lg transition-all hover:opacity-90 text-white shrink-0"
         style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
       >
         <Plus size={13} />
-        <span>New</span>
+        {!isMobile && <span>New</span>}
       </button>
 
       {/* Notifications */}
       <div className="relative">
         <button
           onClick={() => setShowNotifications(!showNotifications)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors relative"
+          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors relative shrink-0"
           style={{ color: 'var(--text-secondary)' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -192,6 +215,7 @@ export default function Header() {
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
               transition={{ duration: 0.15 }}
               className="absolute right-0 top-10 z-50"
+              style={isMobile ? { right: -8, width: 'calc(100vw - 16px)', maxWidth: 360 } : undefined}
             >
               <NotificationCenter onClose={() => setShowNotifications(false)} />
             </motion.div>

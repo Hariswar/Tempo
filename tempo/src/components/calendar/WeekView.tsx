@@ -1,12 +1,12 @@
 import { useMemo, useRef } from 'react'
 import {
   startOfWeek, endOfWeek, eachDayOfInterval, format,
-  isToday, isSameDay
+  isToday
 } from 'date-fns'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../../stores/appStore'
 import type { CalendarEvent } from '../../types'
-import { getCategoryColor, minuteSinceStartOfDay, cn } from '../../lib/utils'
+import { getCategoryColor, minuteSinceStartOfDay, isSameDay, cn } from '../../lib/utils'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const HOUR_HEIGHT = 64 // px per hour

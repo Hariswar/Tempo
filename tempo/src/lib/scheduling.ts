@@ -233,6 +233,20 @@ export function simulateAIResponse(
     return "Based on your schedule, you have free windows tomorrow: 8–9 AM and 2–3 PM. Thursday afternoon also looks open from 3:30 PM onwards. Want me to suggest something productive for those slots?";
   }
   if (lower.includes('add') || lower.includes('schedule') || lower.includes('create')) {
+    if (lower.includes('test')) {
+      return JSON.stringify({
+        content: "I've added the test event.",
+        mutations: [
+          {
+            type: "CREATE_EVENT",
+            title: "AI Test Event",
+            startUtc: new Date(now.getTime() + 3600000).toISOString(),
+            endUtc: new Date(now.getTime() + 7200000).toISOString(),
+            category: "focus_block"
+          }
+        ]
+      })
+    }
     return "Sure! I can help you schedule that. Could you tell me the title, preferred time, and how flexible the timing is? I'll check for conflicts and find the best slot automatically.";
   }
   if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {

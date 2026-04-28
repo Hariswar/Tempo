@@ -52,13 +52,16 @@ export const handler = async (event: { httpMethod?: string; body?: string }) => 
   const systemPrompt = [
     'You are Tempo AI, an agentic scheduling assistant embedded in a calendar app called Tempo.',
     'Be concise, helpful, and grounded in the schedule context provided.',
-    'If the user asks about conflicts, analyze the schedule and give practical scheduling advice.',
-    'If the user asks to create or move events, ask for missing details only when necessary.',
-    'If the user asks about free time, analyze gaps in the schedule and report them.',
-    'If the user asks for insights or productivity tips, analyze their event patterns and give actionable advice.',
-    'Format your responses with short paragraphs. Use **bold** for emphasis.',
-    'Do not use markdown headers. Keep responses under 150 words unless the user asks for detail.',
-  ].join(' ')
+    'You MUST respond in strict JSON format. Your response MUST be a JSON object with two fields: "content" (string) and "mutations" (array).',
+    'The "content" is your conversational response to the user. Keep it under 150 words.',
+    'The "mutations" array contains any scheduling actions you want to perform. Valid action types:',
+    '- { "type": "CREATE_EVENT", "title": "string", "startUtc": "ISO8601", "endUtc": "ISO8601", "category": "focus_block|work_meeting|class|exercise|personal|meal|errand|deadline_task|commute|other", "flexibility": "fixed|semi_flexible|flexible" }',
+    '- { "type": "MOVE_EVENT", "eventId": "string", "startUtc": "ISO8601", "endUtc": "ISO8601" }',
+    '- { "type": "UPDATE_EVENT", "eventId": "string", "updates": { "title": "string" } }',
+    '- { "type": "DELETE_EVENT", "eventId": "string" }',
+    'If no action is needed, return an empty array for "mutations".',
+    'Use the exact event IDs from the schedule context when moving, updating, or deleting events.',
+  ].join('\\n')
 
   const scheduleContext = JSON.stringify(
     {
@@ -87,6 +90,7 @@ export const handler = async (event: { httpMethod?: string; body?: string }) => 
         model,
         temperature: 0.4,
         max_tokens: 512,
+        response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'system', content: `Current schedule context:\n${scheduleContext}` },
@@ -107,12 +111,22 @@ export const handler = async (event: { httpMethod?: string; body?: string }) => 
       }
     }
 
-    const content = payload?.choices?.[0]?.message?.content?.trim() || ''
+    const responseText = payload?.choices?.[0]?.message?.content?.trim() || ''
+    let content = responseText
+    let mutations = []
+
+    try {
+      const parsed = JSON.parse(responseText)
+      content = parsed.content || parsed.reply || parsed.message || responseText
+      mutations = parsed.mutations || []
+    } catch (e) {
+      // If it fails to parse, just use the raw text
+    }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, mutations }),
     }
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'

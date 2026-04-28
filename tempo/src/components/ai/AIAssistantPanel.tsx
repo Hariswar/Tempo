@@ -39,8 +39,8 @@ function MessageContent({ content }: { content: string }) {
   )
 }
 
-export default function AIAssistantPanel() {
-  const { toggleAIPanel, aiMessages, addAIMessage, events, pendingConflict, acceptRescheduleOption, setPendingConflict } = useAppStore()
+export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
+  const { toggleAIPanel, aiMessages, addAIMessage, events, pendingConflict, acceptRescheduleOption, setPendingConflict, createEvent, updateEvent, moveEvent, deleteEvent } = useAppStore()
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -74,10 +74,39 @@ export default function AIAssistantPanel() {
       const assistantMsg: AIMessage = {
         id: `msg-${Date.now()}-ai`,
         role: 'assistant',
-        content: response,
+        content: response.content,
         timestamp: new Date().toISOString(),
       }
       addAIMessage(assistantMsg)
+
+      if (response.mutations && response.mutations.length > 0) {
+        response.mutations.forEach(m => {
+          try {
+            if (m.type === 'CREATE_EVENT') {
+              createEvent({
+                title: m.title,
+                startUtc: m.startUtc,
+                endUtc: m.endUtc,
+                category: (m.category as any) || 'other',
+                flexibility: (m.flexibility as any) || 'flexible',
+                isRecurring: false,
+                hasExternalAttendees: false,
+                attendeeCount: 1,
+                isCompleted: false,
+                aiGenerated: true
+              })
+            } else if (m.type === 'UPDATE_EVENT') {
+              updateEvent(m.eventId, m.updates)
+            } else if (m.type === 'MOVE_EVENT') {
+              moveEvent(m.eventId, m.startUtc, m.endUtc)
+            } else if (m.type === 'DELETE_EVENT') {
+              deleteEvent(m.eventId)
+            }
+          } catch (e) {
+            console.error('Failed to apply mutation:', m, e)
+          }
+        })
+      }
     } catch (error) {
       const assistantMsg: AIMessage = {
         id: `msg-${Date.now()}-ai`,
@@ -107,8 +136,13 @@ export default function AIAssistantPanel() {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed right-0 top-0 bottom-0 z-40 flex flex-col w-80 shadow-2xl"
-      style={{ background: '#0c0c18', borderLeft: '1px solid rgba(255,255,255,0.08)' }}
+      className="fixed right-0 top-0 bottom-0 z-40 flex flex-col shadow-2xl"
+      style={{
+        background: '#0c0c18',
+        borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+        width: isMobile ? '100%' : 320,
+        paddingBottom: isMobile ? 56 : 0,
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-14 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
