@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { User, Mail, Lock, UserPlus } from 'lucide-react'
 import { signupUser } from '../services/authService'
+import { useAppStore } from '../stores/appStore'
 
 export default function SignupPage() {
   const navigate = useNavigate()
+  const switchAuthUser = useAppStore((s) => s.switchAuthUser)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,7 +25,8 @@ export default function SignupPage() {
 
     setLoading(true)
     try {
-      signupUser(name, email, password)
+      const authUser = signupUser(name, email, password)
+      switchAuthUser(authUser)
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed.')

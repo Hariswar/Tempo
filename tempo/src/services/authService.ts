@@ -28,6 +28,13 @@ export function getCurrentUserEmail(): string | null {
   return localStorage.getItem(SESSION_KEY)
 }
 
+export function getCurrentAuthUser(): AuthUser | null {
+  const email = getCurrentUserEmail()
+  if (!email) return null
+  const users = readUsers()
+  return users.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null
+}
+
 export function logoutUser() {
   localStorage.removeItem(SESSION_KEY)
 }

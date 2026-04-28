@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onCloseMobile }: SidebarProps) {
-  const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user } = useAppStore()
+  const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user, switchAuthUser } = useAppStore()
   const navigate = useNavigate()
   const unread = notifications.filter((n) => !n.read).length
 
@@ -34,6 +34,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
 
   function handleLogout() {
     logoutUser()
+    switchAuthUser(null)
     navigate('/login')
     onCloseMobile?.()
   }
