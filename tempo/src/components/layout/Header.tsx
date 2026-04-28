@@ -74,6 +74,8 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
     <header
       className="flex items-center gap-2 px-3 shrink-0 transition-colors"
       style={{
+        position: 'relative',
+        zIndex: 30,
         borderBottom: '1px solid var(--border-subtle)',
         background: 'var(--header-bg)',
         minHeight: isMobile ? 'calc(48px + var(--safe-top))' : 48,
@@ -250,8 +252,21 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 top-10 z-50"
-              style={isMobile ? { right: -8, width: 'calc(100vw - 16px)', maxWidth: 360 } : undefined}
+              className="fixed z-50"
+              style={
+                isMobile
+                  ? {
+                      top: 'calc(var(--safe-top) + 52px)',
+                      right: 8,
+                      width: 'calc(100vw - 16px)',
+                      maxWidth: 360,
+                    }
+                  : {
+                      top: 56,
+                      right: 12,
+                      width: 320,
+                    }
+              }
             >
               <NotificationCenter onClose={() => setShowNotifications(false)} />
             </motion.div>
