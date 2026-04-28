@@ -64,12 +64,23 @@ export interface ConflictResolution {
   choiceOptions: RescheduleOption[];
 }
 
+export interface NotificationAction {
+  route?: '/' | '/insights' | '/settings' | '/notifications' | '/login' | '/signup';
+  eventId?: string;
+  focusDateUtc?: string;
+  viewMode?: ViewMode;
+  openAIPanel?: boolean;
+  openConflictResolver?: boolean;
+  ctaLabel?: string;
+}
+
 export interface Notification {
   id: string;
   type: 'conflict' | 'suggestion' | 'reminder' | 'insight' | 'ai';
   title: string;
   body: string;
   eventId?: string;
+  action?: NotificationAction;
   read: boolean;
   createdAt: string;
   conflictResolution?: ConflictResolution;

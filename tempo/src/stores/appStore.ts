@@ -163,9 +163,10 @@ export const useAppStore = create<AppState>()(
 
       addNotification: (n) => {
         const id = `notif-${Date.now()}`;
+        const normalizedAction = n.action ?? (n.eventId ? { eventId: n.eventId } : undefined);
         set((s) => ({
           notifications: [
-            { ...n, id, createdAt: new Date().toISOString() },
+            { ...n, action: normalizedAction, id, createdAt: new Date().toISOString() },
             ...s.notifications,
           ],
         }));
@@ -191,6 +192,7 @@ export const useAppStore = create<AppState>()(
       name: 'tempo-storage',
       partialize: (state) => ({
         events: state.events,
+        notifications: state.notifications,
         viewMode: state.viewMode,
         user: state.user,
         isSidebarCollapsed: state.isSidebarCollapsed,

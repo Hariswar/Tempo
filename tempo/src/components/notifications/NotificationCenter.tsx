@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { Bell, AlertTriangle, Lightbulb, Clock, Zap, X } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { relativeTime } from '../../lib/utils'
+import { getNotificationNavigationPlan } from '../../lib/notifications'
+import { useNotificationActions } from '../../lib/useNotificationActions'
 import type { Notification } from '../../types'
 
 const TYPE_CONFIG = {
@@ -13,8 +15,9 @@ const TYPE_CONFIG = {
 }
 
 export default function NotificationCenter({ onClose }: { onClose: () => void }) {
-  const { notifications, markNotificationRead, markAllNotificationsRead } = useAppStore()
+  const { notifications, events, markAllNotificationsRead } = useAppStore()
   const unread = notifications.filter((n) => !n.read).length
+  const { activateNotification } = useNotificationActions()
 
   return (
     <div
@@ -67,10 +70,8 @@ export default function NotificationCenter({ onClose }: { onClose: () => void })
             <NotificationItem
               key={notif.id}
               notif={notif}
-              onRead={() => {
-                markNotificationRead(notif.id)
-                onClose()
-              }}
+              onRead={() => activateNotification(notif, onClose)}
+              ctaLabel={getNotificationNavigationPlan(notif, events).ctaLabel}
               delay={i * 0.04}
             />
           ))
@@ -83,22 +84,25 @@ export default function NotificationCenter({ onClose }: { onClose: () => void })
 function NotificationItem({
   notif,
   onRead,
+  ctaLabel,
   delay,
 }: {
   notif: Notification
   onRead: () => void
+  ctaLabel: string
   delay: number
 }) {
   const config = TYPE_CONFIG[notif.type]
   const Icon = config.icon
 
   return (
-    <motion.div
+    <motion.button
+      type="button"
       initial={{ opacity: 0, x: 8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
       onClick={onRead}
-      className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-white/3"
+      className="w-full text-left flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-white/3"
       style={{
         borderBottom: '1px solid var(--border-subtle)',
         opacity: notif.read ? 0.5 : 1,
@@ -118,8 +122,11 @@ function NotificationItem({
           )}
         </div>
         <p className="text-[11px] text-text-muted leading-snug mt-0.5">{notif.body}</p>
-        <span className="text-[10px] text-text-muted mt-1 block">{relativeTime(notif.createdAt)}</span>
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <span className="text-[10px] text-text-muted block">{relativeTime(notif.createdAt)}</span>
+          <span className="text-[10px] font-medium" style={{ color: '#ffb347' }}>{ctaLabel}</span>
+        </div>
       </div>
-    </motion.div>
+    </motion.button>
   )
 }

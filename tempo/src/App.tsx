@@ -4,12 +4,16 @@ import CalendarPage from './pages/CalendarPage'
 import InsightsPage from './pages/InsightsPage'
 import SettingsPage from './pages/SettingsPage'
 import NotificationsPage from './pages/NotificationsPage'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
 import './App.css'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="login" element={<LoginPage />} />
+        <Route path="signup" element={<SignupPage />} />
         <Route element={<AppShell />}>
           <Route index element={<CalendarPage />} />
           <Route path="insights" element={<InsightsPage />} />

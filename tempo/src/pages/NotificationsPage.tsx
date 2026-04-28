@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { Bell, AlertTriangle, Lightbulb, Clock, Zap } from 'lucide-react'
 import { useAppStore } from '../stores/appStore'
 import { relativeTime } from '../lib/utils'
+import { getNotificationNavigationPlan } from '../lib/notifications'
+import { useNotificationActions } from '../lib/useNotificationActions'
 import type { Notification } from '../types'
 
 const TYPE_CONFIG = {
@@ -13,7 +15,8 @@ const TYPE_CONFIG = {
 }
 
 export default function NotificationsPage() {
-  const { notifications, markNotificationRead, markAllNotificationsRead } = useAppStore()
+  const { notifications, events, markAllNotificationsRead } = useAppStore()
+  const { activateNotification } = useNotificationActions()
   const unread = notifications.filter((n) => !n.read).length
 
   return (
@@ -56,7 +59,8 @@ export default function NotificationsPage() {
                 key={notif.id}
                 notif={notif}
                 delay={i * 0.03}
-                onRead={() => markNotificationRead(notif.id)}
+                onRead={() => activateNotification(notif)}
+                ctaLabel={getNotificationNavigationPlan(notif, events).ctaLabel}
               />
             ))
           )}
@@ -70,10 +74,12 @@ function NotificationRow({
   notif,
   delay,
   onRead,
+  ctaLabel,
 }: {
   notif: Notification
   delay: number
   onRead: () => void
+  ctaLabel: string
 }) {
   const config = TYPE_CONFIG[notif.type]
   const Icon = config.icon
@@ -105,7 +111,10 @@ function NotificationRow({
           )}
         </div>
         <p className="text-[11px] text-text-muted leading-snug mt-0.5">{notif.body}</p>
-        <span className="text-[10px] text-text-muted mt-1 block">{relativeTime(notif.createdAt)}</span>
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <span className="text-[10px] text-text-muted block">{relativeTime(notif.createdAt)}</span>
+          <span className="text-[10px] font-medium" style={{ color: '#ffb347' }}>{ctaLabel}</span>
+        </div>
       </div>
     </motion.button>
   )
