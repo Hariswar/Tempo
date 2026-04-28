@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, BarChart3, Settings, Sparkles, Bell,
-  ChevronLeft, ChevronRight, Zap
+  ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { cn } from '../../lib/utils'
@@ -27,11 +27,12 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 pt-5 pb-4">
-        <div
-          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
-        >
-          <Zap size={15} className="text-white" />
+        <div className="w-8 h-8 rounded-xl shrink-0 overflow-hidden">
+          <img
+            src="/mascot.png"
+            alt="Tempo mascot"
+            className="w-full h-full object-cover"
+          />
         </div>
         <AnimatePresence>
           {!isSidebarCollapsed && (

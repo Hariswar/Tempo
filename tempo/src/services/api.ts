@@ -1,7 +1,6 @@
 export const appConfig = {
-  aiChatEndpoint: import.meta.env.VITE_AI_CHAT_ENDPOINT || '/.netlify/functions/grok-chat',
-  grokModel: import.meta.env.VITE_GROK_MODEL || 'grok-2-latest',
-  grokApiUrl: import.meta.env.VITE_GROK_API_URL || 'https://api.x.ai/v1/chat/completions',
+  aiChatEndpoint: import.meta.env.VITE_AI_CHAT_ENDPOINT || '/.netlify/functions/groq-chat',
+  groqModel: import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile',
 }
 
 export async function readJson<T>(response: Response): Promise<T> {

@@ -5,7 +5,7 @@
 
 [[redirects]]
   from = "/api/ai/chat"
-  to = "/.netlify/functions/grok-chat"
+  to = "/.netlify/functions/groq-chat"
   status = 200
   force = true
 

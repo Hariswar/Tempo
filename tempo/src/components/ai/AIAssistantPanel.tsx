@@ -84,8 +84,8 @@ export default function AIAssistantPanel() {
         role: 'assistant',
         content:
           error instanceof Error
-            ? `Grok request failed: ${error.message}`
-            : 'Grok request failed. Please check your Netlify function and API key.',
+            ? `Groq request failed: ${error.message}`
+            : 'Groq request failed. Please check your Netlify function and GROQ_API_KEY.',
         timestamp: new Date().toISOString(),
       }
       addAIMessage(assistantMsg)
