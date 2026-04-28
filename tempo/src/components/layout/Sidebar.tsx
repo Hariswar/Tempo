@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, BarChart3, Settings, Sparkles, Bell,
@@ -20,13 +20,14 @@ interface SidebarProps {
 
 export default function Sidebar({ onCloseMobile }: SidebarProps) {
   const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user } = useAppStore()
+  const navigate = useNavigate()
   const unread = notifications.filter((n) => !n.read).length
 
   // On mobile overlay, always show expanded
   const isCollapsed = onCloseMobile ? false : isSidebarCollapsed
 
-  function openNotificationsPanel() {
-    window.dispatchEvent(new Event('tempo:open-notifications'))
+  function openNotificationsPage() {
+    navigate('/notifications')
     onCloseMobile?.()
   }
 
@@ -147,7 +148,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       <div className="p-2 flex flex-col gap-1">
         {/* Notifications badge */}
         <button
-          onClick={openNotificationsPanel}
+          onClick={openNotificationsPage}
           className="sidebar-item w-full relative"
           title={isCollapsed ? 'Notifications' : undefined}
         >
