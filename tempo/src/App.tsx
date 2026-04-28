@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import CalendarPage from './pages/CalendarPage'
@@ -6,9 +7,17 @@ import SettingsPage from './pages/SettingsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import { getCurrentAuthUser } from './services/authService'
+import { useAppStore } from './stores/appStore'
 import './App.css'
 
 export default function App() {
+  const switchAuthUser = useAppStore((s) => s.switchAuthUser)
+
+  useEffect(() => {
+    switchAuthUser(getCurrentAuthUser())
+  }, [switchAuthUser])
+
   return (
     <BrowserRouter>
       <Routes>

@@ -315,6 +315,15 @@ export const useAppStore = create<AppState>()(
         isSidebarCollapsed: state.isSidebarCollapsed,
         isDarkMode: state.isDarkMode,
       }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<AppState> | undefined;
+        return {
+          ...currentState,
+          viewMode: persisted?.viewMode ?? currentState.viewMode,
+          isSidebarCollapsed: persisted?.isSidebarCollapsed ?? currentState.isSidebarCollapsed,
+          isDarkMode: persisted?.isDarkMode ?? currentState.isDarkMode,
+        };
+      },
     }
   )
 );
