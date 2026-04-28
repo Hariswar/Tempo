@@ -137,7 +137,7 @@ export default function WeekView() {
               )}
               style={
                 isToday(day)
-                  ? { background: 'linear-gradient(135deg,#7c3aed,#4f46e5)' }
+                  ? { background: 'linear-gradient(135deg,#ff6a00,#ff8a00)' }
                   : { color: 'var(--text-secondary)' }
               }
             >

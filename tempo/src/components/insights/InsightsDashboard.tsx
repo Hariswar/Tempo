@@ -61,7 +61,7 @@ function HabitHeatmap() {
                     width: 16,
                     height: 10,
                     background: intensity > 0
-                      ? `rgba(124,58,237,${0.15 + intensity * 0.85})`
+                      ? `rgba(255,106,0,${0.15 + intensity * 0.85})`
                       : 'rgba(255,255,255,0.04)',
                   }}
                 />
@@ -96,14 +96,14 @@ function ProductivityChart({ data }: { data: { date: string; score: number }[] }
       <svg viewBox="0 0 100 100" className="w-full" style={{ height: 120 }} preserveAspectRatio="none">
         <defs>
           <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
+            <stop offset="0%" stopColor="#ff6a00" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#ff6a00" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={areaD} fill="url(#chartGrad)" />
-        <path d={pathD} fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={pathD} fill="none" stroke="#ff6a00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="1.2" fill="#7c3aed" />
+          <circle key={i} cx={p.x} cy={p.y} r="1.2" fill="#ff6a00" />
         ))}
       </svg>
       <div className="flex justify-between mt-1">
@@ -162,7 +162,7 @@ export default function InsightsDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Completion Rate" value={`${Math.round(insights.completionRate * 100)}%`} icon={CheckCircle2} color="#10b981" delay={0.05} />
         <StatCard label="Streak" value={`${insights.streakDays}d`} sub="in a row" icon={Flame} color="#f59e0b" delay={0.1} />
-        <StatCard label="Events This Week" value={insights.totalEventsThisWeek} sub={`${insights.completedEvents} done`} icon={Calendar} color="#7c3aed" delay={0.15} />
+        <StatCard label="Events This Week" value={insights.totalEventsThisWeek} sub={`${insights.completedEvents} done`} icon={Calendar} color="#ff6a00" delay={0.15} />
         <StatCard label="Procrastination" value={`${insights.procrastinationScore}`} sub="/ 100" icon={AlertTriangle} color={insights.procrastinationScore < 40 ? '#10b981' : '#ef4444'} delay={0.2} />
       </div>
 
@@ -176,7 +176,7 @@ export default function InsightsDashboard() {
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <TrendingUp size={14} style={{ color: '#7c3aed' }} />
+            <TrendingUp size={14} style={{ color: '#ff6a00' }} />
             <span className="text-sm font-semibold text-text-primary">Productivity Trend</span>
           </div>
           <span className="text-[10px] text-text-muted">Last 14 days</span>
@@ -194,14 +194,14 @@ export default function InsightsDashboard() {
           style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <Brain size={14} style={{ color: '#8b5cf6' }} />
+            <Brain size={14} style={{ color: '#ff7a00' }} />
             <span className="text-sm font-semibold text-text-primary">Activity Heatmap</span>
           </div>
           <HabitHeatmap />
           <div className="flex items-center justify-end gap-2 mt-2">
             <span className="text-[10px] text-text-muted">Less</span>
             {[0.1, 0.3, 0.55, 0.8, 1].map((o, i) => (
-              <div key={i} className="w-2.5 h-2.5 rounded-sm" style={{ background: `rgba(124,58,237,${o})` }} />
+              <div key={i} className="w-2.5 h-2.5 rounded-sm" style={{ background: `rgba(255,106,0,${o})` }} />
             ))}
             <span className="text-[10px] text-text-muted">More</span>
           </div>
@@ -239,10 +239,10 @@ export default function InsightsDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         className="rounded-2xl p-4"
-        style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(79,70,229,0.05))', border: '1px solid rgba(124,58,237,0.2)' }}
+        style={{ background: 'linear-gradient(135deg, rgba(255,106,0,0.1), rgba(255,138,0,0.05))', border: '1px solid rgba(255,106,0,0.2)' }}
       >
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}>
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}>
             <Brain size={12} className="text-white" />
           </div>
           <span className="text-sm font-semibold text-text-primary">AI Summary</span>

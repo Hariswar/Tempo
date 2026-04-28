@@ -100,7 +100,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
           onClick={() => { toggleAIPanel(); onCloseMobile?.() }}
           title={isCollapsed ? 'AI Assistant' : undefined}
           className="sidebar-item text-left w-full"
-          style={{ color: '#a78bfa' }}
+          style={{ color: '#ffb347' }}
         >
           <Sparkles size={16} className="shrink-0" />
           <AnimatePresence>
@@ -169,7 +169,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
         <div className="sidebar-item">
           <div
             className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
+            style={{ background: 'linear-gradient(135deg, #ff6a00, #ec4899)' }}
           >
             {user.displayName.charAt(0)}
           </div>

@@ -141,13 +141,14 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
         background: '#0c0c18',
         borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
         width: isMobile ? '100%' : 320,
-        paddingBottom: isMobile ? 56 : 0,
+        paddingTop: isMobile ? 'var(--safe-top)' : 0,
+        paddingBottom: isMobile ? 'calc(56px + var(--safe-bottom))' : 0,
       }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-14 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}>
             <Sparkles size={13} className="text-white" />
           </div>
           <div>
@@ -180,8 +181,8 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'assistant' && (
-              <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mr-2 mt-0.5" style={{ background: 'linear-gradient(135deg, #7c3aed40, #4f46e940)' }}>
-                <Sparkles size={10} style={{ color: '#a78bfa' }} />
+              <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mr-2 mt-0.5" style={{ background: 'linear-gradient(135deg, #ff6a0040, #ff8a0040)' }}>
+                <Sparkles size={10} style={{ color: '#ffb347' }} />
               </div>
             )}
             <div className="max-w-[85%]">
@@ -197,7 +198,7 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
                       key={i}
                       onClick={() => sendMessage(action.label.replace(/^[^\w]+/, ''))}
                       className="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all hover:opacity-80"
-                      style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', color: '#a78bfa' }}
+                      style={{ background: 'rgba(255,106,0,0.15)', border: '1px solid rgba(255,106,0,0.25)', color: '#ffb347' }}
                     >
                       {action.label}
                     </button>
@@ -214,8 +215,8 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
         {/* Typing indicator */}
         {isTyping && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.2)' }}>
-              <Sparkles size={10} style={{ color: '#a78bfa' }} />
+            <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: 'rgba(255,106,0,0.2)' }}>
+              <Sparkles size={10} style={{ color: '#ffb347' }} />
             </div>
             <div className="ai-message-assistant px-3 py-2.5">
               <div className="flex gap-1">
@@ -225,7 +226,7 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
                     animate={{ y: [0, -4, 0] }}
                     transition={{ duration: 0.6, delay: i * 0.15, repeat: Infinity }}
                     className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: '#a78bfa' }}
+                    style={{ background: '#ffb347' }}
                   />
                 ))}
               </div>
@@ -275,7 +276,7 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isTyping}
             className="w-7 h-7 flex items-center justify-center rounded-lg transition-all disabled:opacity-30"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
+            style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}
           >
             <Send size={12} className="text-white" />
           </button>
@@ -338,7 +339,7 @@ function ConflictBanner({
                 key={i}
                 onClick={() => onAccept(conflict.eventToMove.id, option.proposedStartUtc, option.proposedEndUtc)}
                 className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-left transition-all hover:opacity-90"
-                style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)' }}
+                style={{ background: 'rgba(255,106,0,0.1)', border: '1px solid rgba(255,106,0,0.2)' }}
               >
                 <div>
                   <div className="text-[11px] font-medium text-text-primary">
@@ -348,7 +349,7 @@ function ConflictBanner({
                     {format(new Date(option.proposedStartUtc), 'h:mm a')} – {format(new Date(option.proposedEndUtc), 'h:mm a')}
                   </div>
                 </div>
-                <CheckCircle2 size={14} style={{ color: '#7c3aed' }} />
+                <CheckCircle2 size={14} style={{ color: '#ff6a00' }} />
               </button>
             ))}
           </div>

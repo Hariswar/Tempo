@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Bell, AlertTriangle, Lightbulb, Clock, Zap } from 'lucide-react'
+import { Bell, AlertTriangle, Lightbulb, Clock, Zap, X } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { relativeTime } from '../../lib/utils'
 import type { Notification } from '../../types'
@@ -8,11 +8,11 @@ const TYPE_CONFIG = {
   conflict:   { icon: AlertTriangle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
   suggestion: { icon: Lightbulb,    color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
   reminder:   { icon: Clock,         color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
-  insight:    { icon: Zap,           color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' },
+  insight:    { icon: Zap,           color: '#ff7a00', bg: 'rgba(255,122,0,0.1)' },
   ai:         { icon: Bell,          color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
 }
 
-export default function NotificationCenter({ onClose: _onClose }: { onClose: () => void }) {
+export default function NotificationCenter({ onClose }: { onClose: () => void }) {
   const { notifications, markNotificationRead, markAllNotificationsRead } = useAppStore()
   const unread = notifications.filter((n) => !n.read).length
 
@@ -32,14 +32,27 @@ export default function NotificationCenter({ onClose: _onClose }: { onClose: () 
             </span>
           )}
         </div>
-        {unread > 0 && (
+        <div className="flex items-center gap-2">
+          {unread > 0 && (
+            <button
+              onClick={() => {
+                markAllNotificationsRead()
+                onClose()
+              }}
+              className="text-[11px] text-text-muted hover:text-text-primary transition-colors"
+            >
+              Mark all read
+            </button>
+          )}
           <button
-            onClick={markAllNotificationsRead}
-            className="text-[11px] text-text-muted hover:text-text-primary transition-colors"
+            onClick={onClose}
+            className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            aria-label="Close notifications"
           >
-            Mark all read
+            <X size={13} />
           </button>
-        )}
+        </div>
       </div>
 
       {/* List */}
@@ -54,7 +67,10 @@ export default function NotificationCenter({ onClose: _onClose }: { onClose: () 
             <NotificationItem
               key={notif.id}
               notif={notif}
-              onRead={() => markNotificationRead(notif.id)}
+              onRead={() => {
+                markNotificationRead(notif.id)
+                onClose()
+              }}
               delay={i * 0.04}
             />
           ))
@@ -98,7 +114,7 @@ function NotificationItem({
         <div className="flex items-start justify-between gap-2">
           <span className="text-[12px] font-semibold text-text-primary leading-snug">{notif.title}</span>
           {!notif.read && (
-            <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: '#7c3aed' }} />
+            <div className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style={{ background: '#ff6a00' }} />
           )}
         </div>
         <p className="text-[11px] text-text-muted leading-snug mt-0.5">{notif.body}</p>

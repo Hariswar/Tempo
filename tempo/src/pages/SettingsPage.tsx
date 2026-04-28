@@ -17,7 +17,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.E
       style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
     >
       <div className="flex items-center gap-2.5 px-5 py-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <Icon size={14} style={{ color: '#7c3aed' }} />
+        <Icon size={14} style={{ color: '#ff6a00' }} />
         <span className="text-sm font-semibold text-text-primary">{title}</span>
       </div>
       <div className="p-5 space-y-4">{children}</div>
@@ -43,7 +43,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       type="button"
       onClick={() => onChange(!checked)}
       className="w-10 h-5 rounded-full relative transition-colors"
-      style={{ background: checked ? '#7c3aed' : 'rgba(255,255,255,0.1)' }}
+      style={{ background: checked ? '#ff6a00' : 'rgba(255,255,255,0.1)' }}
     >
       <div
         className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm"
@@ -202,7 +202,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-            style={{ background: saved ? '#10b981' : 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
+            style={{ background: saved ? '#10b981' : 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}
           >
             <Save size={14} />
             {saved ? 'Saved!' : 'Save Settings'}

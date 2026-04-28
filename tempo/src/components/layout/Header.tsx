@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { format, addWeeks, subWeeks, addDays, subDays, addMonths, subMonths } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -22,6 +22,7 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
+  const notificationsRef = useRef<HTMLDivElement>(null)
 
   const date = new Date(selectedDate)
   const unread = notifications.filter((n) => !n.read).length
@@ -40,6 +41,30 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
     setSelectedDate(new Date().toISOString())
   }
 
+  useEffect(() => {
+    if (!showNotifications) return
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!notificationsRef.current) return
+      if (!notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setShowNotifications(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showNotifications])
+
   const headerLabel =
     viewMode === 'day'
       ? format(date, isMobile ? 'EEE, MMM d' : 'EEEE, MMMM d')
@@ -47,10 +72,13 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
 
   return (
     <header
-      className="flex items-center gap-2 px-3 h-12 shrink-0 transition-colors"
+      className="flex items-center gap-2 px-3 shrink-0 transition-colors"
       style={{
         borderBottom: '1px solid var(--border-subtle)',
         background: 'var(--header-bg)',
+        minHeight: isMobile ? 'calc(48px + var(--safe-top))' : 48,
+        paddingTop: isMobile ? 'calc(var(--safe-top) + 4px)' : undefined,
+        paddingBottom: isMobile ? 6 : undefined,
       }}
     >
       {/* Mobile hamburger */}
@@ -84,20 +112,22 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
         >
           <ChevronRight size={15} />
         </button>
-        <button
-          onClick={goToToday}
-          className="px-2 h-7 text-xs font-medium rounded-lg transition-colors"
-          style={{ color: 'var(--text-secondary)' }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-        >
-          Today
-        </button>
+        {!isMobile && (
+          <button
+            onClick={goToToday}
+            className="px-2 h-7 text-xs font-medium rounded-lg transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >
+            Today
+          </button>
+        )}
       </div>
 
       {/* Date label */}
       <h1
-        className="text-sm font-semibold whitespace-nowrap"
+        className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold whitespace-nowrap`}
         style={{ color: 'var(--text-primary)', minWidth: isMobile ? undefined : 160 }}
       >
         {headerLabel}
@@ -125,44 +155,48 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
       <div className="flex-1" />
 
       {/* View mode toggle */}
-      <div
-        className="flex items-center gap-0.5 p-1 rounded-lg"
-        style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
-      >
-        {([
-          { mode: 'day'   as const, icon: Calendar,   label: 'Day' },
-          { mode: 'week'  as const, icon: Columns,     label: 'Week' },
-          { mode: 'month' as const, icon: LayoutGrid,  label: 'Month' },
-        ] as const).map(({ mode, icon: Icon, label }) => (
-          <button
-            key={mode}
-            onClick={() => setViewMode(mode)}
-            title={label}
-            className="w-7 h-6 flex items-center justify-center rounded-md transition-all text-xs"
-            style={
-              viewMode === mode
-                ? { background: 'rgba(124,58,237,0.25)', color: '#a78bfa' }
-                : { color: 'var(--text-muted)' }
-            }
-          >
-            <Icon size={13} />
-          </button>
-        ))}
-      </div>
+      {!isMobile && (
+        <div
+          className="flex items-center gap-0.5 p-1 rounded-lg"
+          style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
+        >
+          {([
+            { mode: 'day'   as const, icon: Calendar,   label: 'Day' },
+            { mode: 'week'  as const, icon: Columns,     label: 'Week' },
+            { mode: 'month' as const, icon: LayoutGrid,  label: 'Month' },
+          ] as const).map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              title={label}
+              className="w-7 h-6 flex items-center justify-center rounded-md transition-all text-xs"
+              style={
+                viewMode === mode
+                  ? { background: 'rgba(255,106,0,0.25)', color: '#ffb347' }
+                  : { color: 'var(--text-muted)' }
+              }
+            >
+              <Icon size={13} />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        className="w-8 h-8 flex items-center justify-center rounded-lg transition-all shrink-0"
-        style={{
-          background: 'var(--input-bg)',
-          border: '1px solid var(--input-border)',
-          color: isDarkMode ? '#f59e0b' : '#7c3aed',
-        }}
-      >
-        {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
-      </button>
+      {!isMobile && (
+        <button
+          onClick={toggleTheme}
+          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="w-8 h-8 flex items-center justify-center rounded-lg transition-all shrink-0"
+          style={{
+            background: 'var(--input-bg)',
+            border: '1px solid var(--input-border)',
+            color: isDarkMode ? '#f59e0b' : '#ff6a00',
+          }}
+        >
+          {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
+      )}
 
       {/* AI button — desktop only (mobile has bottom nav) */}
       {!isMobile && (
@@ -170,9 +204,9 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
           onClick={toggleAIPanel}
           className="flex items-center gap-1.5 px-3 h-7 text-xs font-medium rounded-lg transition-all hover:opacity-90"
           style={{
-            background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(79,70,229,0.15))',
-            border: '1px solid rgba(124,58,237,0.3)',
-            color: '#a78bfa',
+            background: 'linear-gradient(135deg, rgba(255,106,0,0.25), rgba(255,138,0,0.15))',
+            border: '1px solid rgba(255,106,0,0.3)',
+            color: '#ffb347',
           }}
         >
           <Sparkles size={12} />
@@ -184,18 +218,20 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
       <button
         onClick={() => openEventModal()}
         className="flex items-center gap-1.5 px-3 h-7 text-xs font-semibold rounded-lg transition-all hover:opacity-90 text-white shrink-0"
-        style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
+        style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}
       >
         <Plus size={13} />
         {!isMobile && <span>New</span>}
       </button>
 
       {/* Notifications */}
-      <div className="relative">
+      <div ref={notificationsRef} className="relative">
         <button
           onClick={() => setShowNotifications(!showNotifications)}
           className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors relative shrink-0"
           style={{ color: 'var(--text-secondary)' }}
+          aria-expanded={showNotifications}
+          aria-label="Notifications"
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >

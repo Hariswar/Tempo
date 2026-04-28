@@ -14,9 +14,9 @@ export default {
         hover: '#1a1a2e',
         border: 'rgba(255,255,255,0.06)',
         accent: {
-          DEFAULT: '#7c3aed',
-          hover: '#6d28d9',
-          muted: 'rgba(124,58,237,0.15)',
+          DEFAULT: '#ff6a00',
+          hover: '#ff4d00',
+          muted: 'rgba(255,106,0,0.15)',
         },
         text: {
           primary: '#f1f0f8',

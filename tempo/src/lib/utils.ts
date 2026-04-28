@@ -10,7 +10,7 @@ export const CATEGORY_COLORS: Record<EventCategory, string> = {
   research_meeting: '#6366f1',
   work_meeting:     '#3b82f6',
   class:            '#10b981',
-  focus_block:      '#8b5cf6',
+  focus_block:      '#ff7a00',
   exercise:         '#f59e0b',
   personal:         '#ec4899',
   errand:           '#84cc16',
