@@ -8,6 +8,7 @@ import {
 import { useAppStore } from '../../stores/appStore'
 import type { CalendarEvent, EventCategory, EventFlexibility } from '../../types'
 import { getCategoryColor, CATEGORY_LABELS, CATEGORY_ICONS, formatDuration } from '../../lib/utils'
+import LocationPicker from '../location/LocationPicker'
 
 const CATEGORIES: EventCategory[] = [
   'focus_block', 'work_meeting', 'research_meeting', 'class',
@@ -50,6 +51,9 @@ export default function EventModal() {
     isRecurring: editingEvent?.isRecurring ?? false,
     deadlineUtc: editingEvent?.deadlineUtc ?? '',
   })
+
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [locationCoords, setLocationCoords] = useState<LocationCoordinates | undefined>()
 
   const color = getCategoryColor(form.category as EventCategory)
 
@@ -221,14 +225,34 @@ export default function EventModal() {
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <MapPin size={13} className="text-text-muted shrink-0" />
-            <input
-              value={form.locationLabel}
-              onChange={(e) => set('locationLabel', e.target.value)}
-              placeholder="Add location…"
-              className="flex-1 bg-transparent text-xs text-text-primary outline-none placeholder:text-text-muted"
-            />
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowLocationPicker(!showLocationPicker)}
+              className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs text-text-secondary transition-colors"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+            >
+              <MapPin size={13} className="text-text-muted shrink-0" />
+              <span>
+                {form.locationLabel || 'Add location or use GPS...'}
+              </span>
+            </button>
+            
+            {showLocationPicker && (
+              <div className="mt-2 pt-2 border-t border-white/10">
+                <LocationPicker
+                  value={form.locationLabel || locationCoords}
+                  onChange={(coords, name) => {
+                    set('locationLabel', name)
+                    setLocationCoords(coords)
+                  }}
+                  showMap={true}
+                  compact={false}
+                />
+              </div>
+            )}
           </div>
 
           {/* Toggles row */}

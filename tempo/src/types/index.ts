@@ -27,6 +27,8 @@ export interface CalendarEvent {
   attendeeCount: number;
   deadlineUtc?: string;
   locationLabel?: string;
+  locationLat?: number;
+  locationLng?: number;
   isCompleted: boolean;
   completedAt?: string;
   aiGenerated: boolean;

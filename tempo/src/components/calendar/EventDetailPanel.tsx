@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { X, MapPin, Users, Clock, Repeat, Tag, CheckCircle2, Edit3, Trash2, AlertCircle } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { getCategoryColor, CATEGORY_LABELS, CATEGORY_ICONS, formatDuration } from '../../lib/utils'
+import LocationMap from '../location/LocationMap'
 
 export default function EventDetailPanel() {
   const { selectedEvent, selectEvent, openEventModal, deleteEvent, completeEvent } = useAppStore()
@@ -77,9 +78,22 @@ export default function EventDetailPanel() {
             </div>
 
             {selectedEvent.locationLabel && (
-              <div className="flex items-center gap-2 text-xs text-text-secondary">
-                <MapPin size={12} className="text-text-muted shrink-0" />
-                <span>{selectedEvent.locationLabel}</span>
+              <div>
+                <div className="flex items-center gap-2 text-xs text-text-secondary">
+                  <MapPin size={12} className="text-text-muted shrink-0" />
+                  <span>{selectedEvent.locationLabel}</span>
+                </div>
+                {selectedEvent.locationLat && selectedEvent.locationLng && (
+                  <div className="mt-2">
+                    <LocationMap
+                      coordinates={{
+                        latitude: selectedEvent.locationLat,
+                        longitude: selectedEvent.locationLng,
+                      }}
+                      readOnly={true}
+                    />
+                  </div>
+                )}
               </div>
             )}
 

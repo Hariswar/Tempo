@@ -326,3 +326,50 @@ html.light .event-card {
 html.light .text-white\/40 { color: rgba(0,0,0,0.4) !important; }
 html.light .text-white\/30 { color: rgba(0,0,0,0.3) !important; }
 hmtl.light .border-white\/4 { border-color: rgba(0,0,0,0.04) !important; }
+
+/* ── Leaflet map theme customization ────────────────────────── */
+.leaflet-container {
+  background: var(--bg-card) !important;
+}
+
+html.dark .leaflet-container {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95);
+}
+
+.leaflet-container a {
+  color: var(--accent-1);
+}
+
+.leaflet-popup-content {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.leaflet-popup {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+
+html.dark .leaflet-popup-content-wrapper,
+html.dark .leaflet-popup-tip {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  filter: none !important;
+}
+
+html.light .leaflet-popup-content-wrapper,
+html.light .leaflet-popup-tip {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.leaflet-marker-icon {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.leaflet-tile-pane {
+  filter: brightness(0.85) contrast(1.1);
+}
+
+html.light .leaflet-tile-pane {
+  filter: brightness(1) contrast(1);
+}
