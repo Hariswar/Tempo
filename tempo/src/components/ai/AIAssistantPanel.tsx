@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { X, Sparkles, Send, AlertTriangle, Clock, CheckCircle2, XCircle, RotateCcw } from 'lucide-react'
+import { X, Sparkles, Send, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAppStore } from '../../stores/appStore'
-import type { AIMessage } from '../../types'
-import { simulateAIResponse } from '../../lib/scheduling'
-import { getCategoryColor, CATEGORY_LABELS } from '../../lib/utils'
+import type { AIMessage, ConflictResolution, RescheduleOption } from '../../types'
+import { sendAIMessage } from '../../services/aiService'
+import { getCategoryColor } from '../../lib/utils'
 
 const WELCOME_MESSAGE: AIMessage = {
   id: 'welcome',
@@ -69,17 +69,29 @@ export default function AIAssistantPanel() {
     addAIMessage(userMsg)
     setIsTyping(true)
 
-    await new Promise((r) => setTimeout(r, 800 + Math.random() * 600))
-
-    const response = simulateAIResponse(text, events, new Date())
-    const assistantMsg: AIMessage = {
-      id: `msg-${Date.now()}-ai`,
-      role: 'assistant',
-      content: response,
-      timestamp: new Date().toISOString(),
+    try {
+      const response = await sendAIMessage(text, events, new Date())
+      const assistantMsg: AIMessage = {
+        id: `msg-${Date.now()}-ai`,
+        role: 'assistant',
+        content: response,
+        timestamp: new Date().toISOString(),
+      }
+      addAIMessage(assistantMsg)
+    } catch (error) {
+      const assistantMsg: AIMessage = {
+        id: `msg-${Date.now()}-ai`,
+        role: 'assistant',
+        content:
+          error instanceof Error
+            ? `Grok request failed: ${error.message}`
+            : 'Grok request failed. Please check your Netlify function and API key.',
+        timestamp: new Date().toISOString(),
+      }
+      addAIMessage(assistantMsg)
+    } finally {
+      setIsTyping(false)
     }
-    addAIMessage(assistantMsg)
-    setIsTyping(false)
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -247,7 +259,7 @@ function ConflictBanner({
   onAccept,
   onDismiss,
 }: {
-  conflict: NonNullable<ReturnType<typeof useAppStore>['pendingConflict']>
+  conflict: ConflictResolution
   onAccept: (id: string, start: string, end: string) => void
   onDismiss: () => void
 }) {
@@ -287,7 +299,7 @@ function ConflictBanner({
         {conflict.choiceOptions.length > 0 && (
           <div className="space-y-1.5">
             <div className="text-[10px] text-text-muted uppercase tracking-wider font-medium">Suggested slots</div>
-            {conflict.choiceOptions.map((option, i) => (
+            {conflict.choiceOptions.map((option: RescheduleOption, i: number) => (
               <button
                 key={i}
                 onClick={() => onAccept(conflict.eventToMove.id, option.proposedStartUtc, option.proposedEndUtc)}

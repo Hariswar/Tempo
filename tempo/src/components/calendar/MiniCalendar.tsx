@@ -5,7 +5,7 @@ import {
 } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
-import { cn, getCategoryColor, isSameDay } from '../../lib/utils'
+import { cn, isSameDay } from '../../lib/utils'
 
 export default function MiniCalendar() {
   const { selectedDate, setSelectedDate, events } = useAppStore()

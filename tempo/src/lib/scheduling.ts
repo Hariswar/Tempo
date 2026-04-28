@@ -3,7 +3,7 @@
  * Mirrors: EventStabilityScorer, CandidateWindowGenerator, ChoiceOptionSelector
  */
 import type { CalendarEvent, RescheduleOption, ConflictResolution, User } from '../types';
-import { addMinutes, addDays, startOfDay, setHours, setMinutes, isWithinInterval } from 'date-fns';
+import { addDays, startOfDay, setHours, setMinutes } from 'date-fns';
 
 // ── Category base scores (mirrors EventStabilityScorer) ──────────────────────
 const CATEGORY_BASE: Record<CalendarEvent['category'], number> = {

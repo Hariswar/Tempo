@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Loader, AlertCircle, Check } from 'lucide-react'
+import { locationService } from '../../lib/locationService'
+import LocationMap from './LocationMap'
 
 interface LocationCoordinates {
   latitude: number
@@ -239,14 +241,13 @@ export default function LocationPicker({
         </div>
       )}
 
-      {/* LocationMap disabled temporarily */}
-      {/* {showMap && coordinates && (
+      {showMap && coordinates && (
         <LocationMap
           coordinates={coordinates}
           onLocationSelect={handleMapSelect}
           onLocationName={setLocationName}
         />
-      )} */}
+      )}
     </div>
   )
 }

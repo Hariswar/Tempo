@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { format, addHours } from 'date-fns'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { addHours } from 'date-fns'
 import {
-  X, MapPin, Users, Clock, Repeat, AlertTriangle,
-  Trash2, CheckCircle2, Edit3, Calendar
+  X, MapPin, Trash2, CheckCircle2
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import type { CalendarEvent, EventCategory, EventFlexibility } from '../../types'
-import { getCategoryColor, CATEGORY_LABELS, CATEGORY_ICONS, formatDuration } from '../../lib/utils'
+import { getCategoryColor, CATEGORY_LABELS, CATEGORY_ICONS } from '../../lib/utils'
 import LocationPicker from '../location/LocationPicker'
+import type { LocationCoordinates } from '../../lib/locationService'
 
 const CATEGORIES: EventCategory[] = [
   'focus_block', 'work_meeting', 'research_meeting', 'class',
@@ -32,7 +32,7 @@ function fromLocalDateTimeInput(val: string): string {
 }
 
 export default function EventModal() {
-  const { editingEvent, closeEventModal, createEvent, updateEvent, deleteEvent, completeEvent, selectEvent } = useAppStore()
+  const { editingEvent, closeEventModal, createEvent, updateEvent, deleteEvent, completeEvent } = useAppStore()
   const isEditing = !!editingEvent?.id
 
   const defaultStart = editingEvent?.startUtc ?? new Date().toISOString()

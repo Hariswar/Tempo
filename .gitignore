@@ -23,3 +23,10 @@ Desktop.ini
 # Project documents
 RESEARCH_POSTER.md
 team2.pdf
+
+# Local environment files
+.env
+.env.*
+tempo/.env
+tempo/.env.*
+!tempo/.env.example

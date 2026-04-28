@@ -128,6 +128,36 @@ npm run dev
 dotnet test tests/Tempo.AgenticScheduling.Tests/
 ```
 
+## Grok AI and Netlify Deployment
+
+Tempo's AI panel now calls a Netlify Function that forwards chat requests to Grok. Keep the API key in Netlify environment variables, not in the browser.
+
+### Local setup
+
+1. Copy `tempo/.env.example` to `tempo/.env`.
+2. Set `GROK_API_KEY` to your xAI key.
+3. If you want to use a different Grok model or endpoint, update `GROK_MODEL` and `GROK_API_URL`.
+4. Run the app with `cd tempo && npm run dev`.
+
+### Netlify deployment
+
+1. Push the repo to GitHub.
+2. In Netlify, create a new site from Git.
+3. Set the base directory to `tempo`.
+4. Use build command `npm run build` and publish directory `dist`.
+5. Add environment variables in Netlify:
+    - `GROK_API_KEY`
+    - `GROK_MODEL`
+    - `GROK_API_URL`
+6. Keep `VITE_AI_CHAT_ENDPOINT=/.netlify/functions/grok-chat` for the frontend if you use a local `.env` file.
+7. Deploy the site.
+
+### Notes
+
+- The frontend only sends chat messages to the Netlify Function.
+- The Netlify Function talks to Grok using the secret key.
+- If you change the function path, update `VITE_AI_CHAT_ENDPOINT` and `netlify.toml` together.
+
 ---
 
 ## Scheduling Engine — Core Flow

@@ -8,16 +8,6 @@ interface LocationCoordinates {
   timestamp?: number
 }
 
-// Lazy load Leaflet to avoid SSR issues
-const MapContainer = ({ children, ...props }: any) => {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  if (!mounted) return null
-  return <div {...props}>{children}</div>
-}
-
 interface LocationMapProps {
   coordinates?: LocationCoordinates
   onLocationSelect?: (coords: LocationCoordinates) => void
@@ -27,13 +17,10 @@ interface LocationMapProps {
 
 export default function LocationMap({
   coordinates,
-  onLocationSelect,
   onLocationName,
-  readOnly = false,
 }: LocationMapProps) {
   const [loading, setLoading] = useState(false)
   const [locationName, setLocationName] = useState<string>('')
-  const [error, setError] = useState<string>('')
   const mapContainerRef = useRef<HTMLDivElement>(null)
 
   const formatCoordinates = (coords: LocationCoordinates): string => {
@@ -67,15 +54,6 @@ export default function LocationMap({
         .finally(() => setLoading(false))
     }
   }, [coordinates, onLocationName, locationName])
-
-  const handleMapClick = (e: any) => {
-    if (!readOnly && onLocationSelect) {
-      onLocationSelect({
-        latitude: e.latlng.lat,
-        longitude: e.latlng.lng,
-      })
-    }
-  }
 
   if (!coordinates) {
     return (
@@ -122,12 +100,6 @@ export default function LocationMap({
               <span>{locationName}</span>
             </div>
           )}
-        </div>
-      )}
-
-      {error && (
-        <div className="text-[10px]" style={{ color: '#ef4444' }}>
-          {error}
         </div>
       )}
 
