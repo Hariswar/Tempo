@@ -25,6 +25,11 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
   // On mobile overlay, always show expanded
   const isCollapsed = onCloseMobile ? false : isSidebarCollapsed
 
+  function openNotificationsPanel() {
+    window.dispatchEvent(new Event('tempo:open-notifications'))
+    onCloseMobile?.()
+  }
+
   return (
     <motion.aside
       animate={{ width: onCloseMobile ? 256 : (isCollapsed ? 64 : 240) }}
@@ -142,6 +147,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       <div className="p-2 flex flex-col gap-1">
         {/* Notifications badge */}
         <button
+          onClick={openNotificationsPanel}
           className="sidebar-item w-full relative"
           title={isCollapsed ? 'Notifications' : undefined}
         >

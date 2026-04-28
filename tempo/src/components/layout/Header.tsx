@@ -65,6 +65,17 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
     }
   }, [showNotifications])
 
+  useEffect(() => {
+    function handleOpenNotifications() {
+      setShowNotifications(true)
+    }
+
+    window.addEventListener('tempo:open-notifications', handleOpenNotifications)
+    return () => {
+      window.removeEventListener('tempo:open-notifications', handleOpenNotifications)
+    }
+  }, [])
+
   const headerLabel =
     viewMode === 'day'
       ? format(date, isMobile ? 'EEE, MMM d' : 'EEEE, MMMM d')
