@@ -3,7 +3,17 @@ export interface AuthUser {
   name: string
   email: string
   password: string
+  profile?: AuthUserProfile
   createdAt: string
+}
+
+export interface AuthUserProfile {
+  timezone: string
+  workdayStart: string
+  workdayEnd: string
+  quietStart: string
+  quietEnd: string
+  travelBufferMinutes: number
 }
 
 const USERS_KEY = 'tempo-auth-users'
@@ -39,7 +49,12 @@ export function logoutUser() {
   localStorage.removeItem(SESSION_KEY)
 }
 
-export function signupUser(name: string, email: string, password: string) {
+export function signupUser(
+  name: string,
+  email: string,
+  password: string,
+  profileOverrides?: Partial<AuthUserProfile>
+) {
   const normalizedEmail = email.trim().toLowerCase()
   const users = readUsers()
   const existing = users.find((u) => u.email.toLowerCase() === normalizedEmail)
@@ -52,6 +67,14 @@ export function signupUser(name: string, email: string, password: string) {
     name: name.trim(),
     email: normalizedEmail,
     password,
+    profile: {
+      timezone: profileOverrides?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      workdayStart: profileOverrides?.workdayStart ?? '08:00',
+      workdayEnd: profileOverrides?.workdayEnd ?? '22:00',
+      quietStart: profileOverrides?.quietStart ?? '23:00',
+      quietEnd: profileOverrides?.quietEnd ?? '07:00',
+      travelBufferMinutes: profileOverrides?.travelBufferMinutes ?? 30,
+    },
     createdAt: new Date().toISOString(),
   }
 
@@ -71,4 +94,33 @@ export function loginUser(email: string, password: string) {
 
   localStorage.setItem(SESSION_KEY, normalizedEmail)
   return user
+}
+
+export function updateAuthUserProfile(
+  email: string,
+  updates: Partial<AuthUserProfile> & { name?: string }
+): AuthUser | null {
+  const normalizedEmail = email.trim().toLowerCase()
+  const users = readUsers()
+  const idx = users.findIndex((u) => u.email.toLowerCase() === normalizedEmail)
+  if (idx < 0) return null
+
+  const existing = users[idx]
+  const merged: AuthUser = {
+    ...existing,
+    name: updates.name ?? existing.name,
+    profile: {
+      timezone: existing.profile?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      workdayStart: existing.profile?.workdayStart ?? '08:00',
+      workdayEnd: existing.profile?.workdayEnd ?? '22:00',
+      quietStart: existing.profile?.quietStart ?? '23:00',
+      quietEnd: existing.profile?.quietEnd ?? '07:00',
+      travelBufferMinutes: existing.profile?.travelBufferMinutes ?? 30,
+      ...updates,
+    },
+  }
+
+  users[idx] = merged
+  writeUsers(users)
+  return merged
 }

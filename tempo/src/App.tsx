@@ -7,6 +7,8 @@ import SettingsPage from './pages/SettingsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ProfilePage from './pages/ProfilePage'
+import OnboardingPage from './pages/OnboardingPage'
 import { getCurrentAuthUser } from './services/authService'
 import { useAppStore } from './stores/appStore'
 import './App.css'
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="insights" element={<InsightsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="onboarding" element={<OnboardingPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -65,7 +65,7 @@ export interface ConflictResolution {
 }
 
 export interface NotificationAction {
-  route?: '/' | '/insights' | '/settings' | '/notifications' | '/login' | '/signup';
+  route?: '/' | '/insights' | '/settings' | '/notifications' | '/login' | '/signup' | '/profile' | '/onboarding';
   eventId?: string;
   focusDateUtc?: string;
   viewMode?: ViewMode;

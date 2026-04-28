@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Calendar, BarChart3, Settings, Sparkles, Bell,
-  ChevronLeft, ChevronRight, X, LogOut
+  ChevronLeft, ChevronRight, X, LogOut, UserCircle2
 } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
 import { cn } from '../../lib/utils'
@@ -12,6 +12,7 @@ import { logoutUser } from '../../services/authService'
 const NAV_ITEMS = [
   { to: '/', icon: Calendar, label: 'Calendar' },
   { to: '/insights', icon: BarChart3, label: 'Insights' },
+  { to: '/profile', icon: UserCircle2, label: 'Profile' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 

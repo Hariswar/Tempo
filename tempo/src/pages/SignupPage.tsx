@@ -11,6 +11,13 @@ export default function SignupPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  const [workdayStart, setWorkdayStart] = useState('08:00')
+  const [workdayEnd, setWorkdayEnd] = useState('22:00')
+  const [quietStart, setQuietStart] = useState('23:00')
+  const [quietEnd, setQuietEnd] = useState('07:00')
+  const [travelBufferMinutes, setTravelBufferMinutes] = useState(30)
+  const [startTutorial, setStartTutorial] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -25,9 +32,16 @@ export default function SignupPage() {
 
     setLoading(true)
     try {
-      const authUser = signupUser(name, email, password)
+      const authUser = signupUser(name, email, password, {
+        timezone,
+        workdayStart,
+        workdayEnd,
+        quietStart,
+        quietEnd,
+        travelBufferMinutes,
+      })
       switchAuthUser(authUser)
-      navigate('/')
+      navigate(startTutorial ? '/onboarding' : '/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed.')
     } finally {
@@ -91,6 +105,81 @@ export default function SignupPage() {
                 className="bg-transparent outline-none text-sm text-text-primary w-full"
                 placeholder="At least 6 characters"
               />
+            </div>
+          </label>
+
+          <div className="rounded-xl p-3 space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
+            <div className="text-xs font-semibold text-text-primary">Scheduling Preferences</div>
+            <label className="block">
+              <span className="text-[11px] text-text-secondary">Timezone</span>
+              <input
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+              />
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block">
+                <span className="text-[11px] text-text-secondary">Work Start</span>
+                <input
+                  type="time"
+                  value={workdayStart}
+                  onChange={(e) => setWorkdayStart(e.target.value)}
+                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[11px] text-text-secondary">Work End</span>
+                <input
+                  type="time"
+                  value={workdayEnd}
+                  onChange={(e) => setWorkdayEnd(e.target.value)}
+                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[11px] text-text-secondary">Quiet Start</span>
+                <input
+                  type="time"
+                  value={quietStart}
+                  onChange={(e) => setQuietStart(e.target.value)}
+                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[11px] text-text-secondary">Quiet End</span>
+                <input
+                  type="time"
+                  value={quietEnd}
+                  onChange={(e) => setQuietEnd(e.target.value)}
+                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                />
+              </label>
+            </div>
+            <label className="block">
+              <span className="text-[11px] text-text-secondary">Travel Buffer ({travelBufferMinutes} min)</span>
+              <input
+                type="range"
+                min={0}
+                max={90}
+                step={5}
+                value={travelBufferMinutes}
+                onChange={(e) => setTravelBufferMinutes(Number(e.target.value))}
+                className="mt-2 w-full"
+              />
+            </label>
+          </div>
+
+          <label className="flex items-start gap-2 rounded-lg p-2 cursor-pointer" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
+            <input
+              type="checkbox"
+              checked={startTutorial}
+              onChange={(e) => setStartTutorial(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div>
+              <div className="text-xs font-medium text-text-primary">Start quick tutorial after sign up</div>
+              <div className="text-[11px] text-text-muted">Includes creating your first event and AI scheduling tips.</div>
             </div>
           </label>
 

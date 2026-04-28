@@ -40,6 +40,7 @@ interface AppState {
 
   // Actions
   switchAuthUser: (authUser: AuthUser | null) => void;
+  updateUserProfile: (updates: Partial<User>) => void;
   setViewMode: (mode: ViewMode) => void;
   setSelectedDate: (date: string) => void;
   selectEvent: (event: CalendarEvent | null) => void;
@@ -81,10 +82,24 @@ function buildStoreUser(authUser: AuthUser | null): User {
     id: authUser?.id ?? MOCK_USER.id,
     email: authUser?.email ?? MOCK_USER.email,
     displayName: authUser?.name ?? MOCK_USER.displayName,
+    timezone: authUser?.profile?.timezone ?? MOCK_USER.timezone,
+    workdayStart: authUser?.profile?.workdayStart ?? MOCK_USER.workdayStart,
+    workdayEnd: authUser?.profile?.workdayEnd ?? MOCK_USER.workdayEnd,
+    quietStart: authUser?.profile?.quietStart ?? MOCK_USER.quietStart,
+    quietEnd: authUser?.profile?.quietEnd ?? MOCK_USER.quietEnd,
+    travelBufferMinutes: authUser?.profile?.travelBufferMinutes ?? MOCK_USER.travelBufferMinutes,
   };
 }
 
 function defaultScopedState(authUser: AuthUser | null): UserScopedState {
+  if (authUser) {
+    return {
+      events: [],
+      notifications: [],
+      user: buildStoreUser(authUser),
+    };
+  }
+
   return {
     events: [...MOCK_EVENTS],
     notifications: [...MOCK_NOTIFICATIONS],
@@ -101,12 +116,22 @@ function readScopedState(authUser: AuthUser | null): UserScopedState {
 
   try {
     const parsed = JSON.parse(raw) as Partial<UserScopedState>;
+    const authUserProfile = buildStoreUser(authUser);
+    const persistedUser = parsed.user;
     return {
       events: Array.isArray(parsed.events) ? parsed.events : [...MOCK_EVENTS],
       notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [...MOCK_NOTIFICATIONS],
-      user: parsed.user
-        ? { ...buildStoreUser(authUser), ...parsed.user }
-        : buildStoreUser(authUser),
+      user: persistedUser
+        ? {
+            ...authUserProfile,
+            timezone: persistedUser.timezone ?? authUserProfile.timezone,
+            workdayStart: persistedUser.workdayStart ?? authUserProfile.workdayStart,
+            workdayEnd: persistedUser.workdayEnd ?? authUserProfile.workdayEnd,
+            quietStart: persistedUser.quietStart ?? authUserProfile.quietStart,
+            quietEnd: persistedUser.quietEnd ?? authUserProfile.quietEnd,
+            travelBufferMinutes: persistedUser.travelBufferMinutes ?? authUserProfile.travelBufferMinutes,
+          }
+        : authUserProfile,
     };
   } catch {
     return defaultScopedState(authUser);
@@ -175,6 +200,16 @@ export const useAppStore = create<AppState>()(
             selectedDate: new Date().toISOString(),
           });
           persistScopedState(email, scoped);
+        },
+
+        updateUserProfile: (updates) => {
+          set((s) => ({
+            user: {
+              ...s.user,
+              ...updates,
+            },
+          }));
+          persistActiveScopedState();
         },
 
         setViewMode: (mode) => set({ viewMode: mode }),

@@ -1,7 +1,7 @@
 import type { CalendarEvent, Notification, NotificationAction } from '../types'
 
 export interface NotificationNavigationPlan extends NotificationAction {
-  route: '/' | '/insights' | '/settings' | '/notifications' | '/login' | '/signup'
+  route: '/' | '/insights' | '/settings' | '/notifications' | '/login' | '/signup' | '/profile' | '/onboarding'
   ctaLabel: string
 }
 
