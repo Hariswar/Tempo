@@ -186,20 +186,18 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
       )}
 
       {/* Theme toggle */}
-      {!isMobile && (
-        <button
-          onClick={toggleTheme}
-          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-all shrink-0"
-          style={{
-            background: 'var(--input-bg)',
-            border: '1px solid var(--input-border)',
-            color: isDarkMode ? '#f59e0b' : '#ff6a00',
-          }}
-        >
-          {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
-        </button>
-      )}
+      <button
+        onClick={toggleTheme}
+        title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        className="w-8 h-8 flex items-center justify-center rounded-lg transition-all shrink-0"
+        style={{
+          background: 'var(--input-bg)',
+          border: '1px solid var(--input-border)',
+          color: isDarkMode ? '#f59e0b' : '#ff6a00',
+        }}
+      >
+        {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+      </button>
 
       {/* AI button — desktop only (mobile has bottom nav) */}
       {!isMobile && (

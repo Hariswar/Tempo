@@ -18,7 +18,7 @@ function StatCard({ label, value, sub, icon: Icon, color, delay = 0 }: {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
       className="rounded-2xl p-4 flex flex-col gap-2"
-      style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
     >
       <div className="flex items-center justify-between">
         <span className="text-[11px] text-text-muted font-medium uppercase tracking-wider">{label}</span>
@@ -62,7 +62,7 @@ function HabitHeatmap() {
                     height: 10,
                     background: intensity > 0
                       ? `rgba(255,106,0,${0.15 + intensity * 0.85})`
-                      : 'rgba(255,255,255,0.04)',
+                      : 'var(--input-bg)',
                   }}
                 />
               )
@@ -132,7 +132,7 @@ function CategoryBar({ category, count, completionRate, delay }: {
           <span className="text-[11px] font-medium text-text-secondary">{CATEGORY_LABELS[category]}</span>
           <span className="text-[10px] text-text-muted">{count} events · {Math.round(completionRate * 100)}%</span>
         </div>
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--input-bg)' }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${completionRate * 100}%` }}
@@ -172,7 +172,7 @@ export default function InsightsDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
         className="rounded-2xl p-4"
-        style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export default function InsightsDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="rounded-2xl p-4"
-          style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
         >
           <div className="flex items-center gap-2 mb-3">
             <Brain size={14} style={{ color: '#ff7a00' }} />
@@ -213,7 +213,7 @@ export default function InsightsDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
           className="rounded-2xl p-4"
-          style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
         >
           <div className="flex items-center gap-2 mb-3">
             <BarChart2 size={14} style={{ color: '#3b82f6' }} />

@@ -14,9 +14,9 @@ function Section({ title, icon: Icon, children }: { title: string; icon: React.E
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl overflow-hidden"
-      style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.06)' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
     >
-      <div className="flex items-center gap-2.5 px-5 py-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center gap-2.5 px-5 py-3.5" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <Icon size={14} style={{ color: '#ff6a00' }} />
         <span className="text-sm font-semibold text-text-primary">{title}</span>
       </div>
@@ -43,7 +43,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       type="button"
       onClick={() => onChange(!checked)}
       className="w-10 h-5 rounded-full relative transition-colors"
-      style={{ background: checked ? '#ff6a00' : 'rgba(255,255,255,0.1)' }}
+      style={{ background: checked ? '#ff6a00' : 'var(--border-medium)' }}
     >
       <div
         className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm"
@@ -60,7 +60,7 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="px-2.5 py-1.5 rounded-lg text-xs text-text-primary outline-none"
-      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+      style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
     />
   )
 }
@@ -104,7 +104,7 @@ export default function SettingsPage() {
               value={form.displayName}
               onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
               className="px-3 py-1.5 rounded-lg text-xs text-text-primary outline-none w-40"
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
             />
           </FieldRow>
           <FieldRow label="Email" description="Used for account identification">
@@ -112,7 +112,7 @@ export default function SettingsPage() {
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               className="px-3 py-1.5 rounded-lg text-xs text-text-primary outline-none w-48"
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
             />
           </FieldRow>
           <FieldRow label="Timezone">
@@ -120,7 +120,7 @@ export default function SettingsPage() {
               value={form.timezone}
               onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}
               className="px-3 py-1.5 rounded-lg text-xs text-text-primary outline-none"
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
             >
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
 
         {/* Auth placeholder */}
         <Section title="Security & Auth" icon={Shield}>
-          <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'var(--bg-faded)', border: '1px solid var(--border-subtle)' }}>
             <div>
               <div className="text-xs font-medium text-text-primary">Auth0 Integration</div>
               <div className="text-[11px] text-text-muted mt-0.5">OAuth 2.0 authentication — coming soon</div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
               Phase 2
             </span>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'var(--bg-faded)', border: '1px solid var(--border-subtle)' }}>
             <div>
               <div className="text-xs font-medium text-text-primary">Location Encryption</div>
               <div className="text-[11px] text-text-muted mt-0.5">End-to-end encryption for location data</div>
