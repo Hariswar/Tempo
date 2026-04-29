@@ -1,3 +1,5 @@
+import { EXAMPLE_ACCOUNT, EXAMPLE_ACCOUNT_PROFILE } from '../data/exampleAccountSeed'
+
 export interface AuthUser {
   id: string
   name: string
@@ -20,14 +22,44 @@ export interface AuthUserProfile {
 const USERS_KEY = 'tempo-auth-users'
 const SESSION_KEY = 'tempo-auth-session'
 
+function buildExampleAuthUser(): AuthUser {
+  return {
+    id: EXAMPLE_ACCOUNT.id,
+    name: EXAMPLE_ACCOUNT.name,
+    email: EXAMPLE_ACCOUNT.email,
+    password: EXAMPLE_ACCOUNT.password,
+    profile: { ...EXAMPLE_ACCOUNT_PROFILE },
+    onboardingPending: false,
+    createdAt: EXAMPLE_ACCOUNT.createdAt,
+  }
+}
+
+function ensureExampleAuthUser(users: AuthUser[]): AuthUser[] {
+  const exampleEmail = EXAMPLE_ACCOUNT.email.toLowerCase()
+  const hasExample = users.some((u) => u.email.toLowerCase() === exampleEmail)
+  if (hasExample) return users
+  return [...users, buildExampleAuthUser()]
+}
+
 function readUsers(): AuthUser[] {
   const raw = localStorage.getItem(USERS_KEY)
-  if (!raw) return []
+  if (!raw) {
+    const seeded = ensureExampleAuthUser([])
+    writeUsers(seeded)
+    return seeded
+  }
   try {
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed as AuthUser[] : []
+    const users = Array.isArray(parsed) ? (parsed as AuthUser[]) : []
+    const seeded = ensureExampleAuthUser(users)
+    if (seeded !== users) {
+      writeUsers(seeded)
+    }
+    return seeded
   } catch {
-    return []
+    const seeded = ensureExampleAuthUser([])
+    writeUsers(seeded)
+    return seeded
   }
 }
 

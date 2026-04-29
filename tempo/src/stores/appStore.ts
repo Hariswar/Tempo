@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CalendarEvent, ViewMode, Notification, AIMessage, User, ConflictResolution } from '../types';
 import { MOCK_EVENTS, MOCK_NOTIFICATIONS, MOCK_USER } from '../data/mockData';
+import { EXAMPLE_ACCOUNT, EXAMPLE_ACCOUNT_EVENTS } from '../data/exampleAccountSeed';
 import { detectConflict, resolveConflict } from '../lib/scheduling';
 import { getCurrentAuthUser, type AuthUser } from '../services/authService';
 
@@ -72,6 +73,15 @@ function normalizeEmail(email?: string | null): string | null {
   return email ? email.trim().toLowerCase() : null;
 }
 
+function getInitialSelectedDate(authUser: AuthUser | null, events: CalendarEvent[]): string {
+  const isExampleAccount =
+    authUser?.email?.trim().toLowerCase() === EXAMPLE_ACCOUNT.email.toLowerCase();
+  if (isExampleAccount && events.length > 0) {
+    return events[0].startUtc;
+  }
+  return new Date().toISOString();
+}
+
 function userDataStorageKey(email: string): string {
   return `${USER_DATA_KEY_PREFIX}${normalizeEmail(email)}`;
 }
@@ -92,8 +102,10 @@ function buildStoreUser(authUser: AuthUser | null): User {
 }
 
 function defaultScopedState(authUser: AuthUser | null): UserScopedState {
+  const isExampleAccount =
+    authUser?.email?.trim().toLowerCase() === EXAMPLE_ACCOUNT.email.toLowerCase();
   return {
-    events: [],
+    events: isExampleAccount ? [...EXAMPLE_ACCOUNT_EVENTS] : [],
     notifications: [],
     user: buildStoreUser(authUser),
   };
@@ -168,7 +180,7 @@ export const useAppStore = create<AppState>()(
         activeUserEmail: normalizeEmail(initialAuthUser?.email),
         events: initialScopedState.events,
         viewMode: 'week',
-        selectedDate: new Date().toISOString(),
+        selectedDate: getInitialSelectedDate(initialAuthUser, initialScopedState.events),
         selectedEvent: null,
         isEventModalOpen: false,
         editingEvent: null,
@@ -195,7 +207,7 @@ export const useAppStore = create<AppState>()(
             isAIPanelOpen: false,
             aiMessages: [],
             pendingConflict: null,
-            selectedDate: new Date().toISOString(),
+            selectedDate: getInitialSelectedDate(authUser, scoped.events),
           });
           persistScopedState(email, scoped);
         },

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { LogIn, UserPlus } from 'lucide-react'
+import { EXAMPLE_ACCOUNT } from '../data/exampleAccountSeed'
 
 export default function AuthPage() {
   return (
@@ -34,6 +35,14 @@ export default function AuthPage() {
             <UserPlus size={15} />
             Create Account
           </Link>
+
+          <div
+            className="rounded-lg px-3 py-2 text-xs"
+            style={{ background: 'rgba(255,106,0,0.1)', border: '1px solid rgba(255,106,0,0.25)', color: 'var(--text-secondary)' }}
+          >
+            Demo account: <strong style={{ color: 'var(--text-primary)' }}>{EXAMPLE_ACCOUNT.email}</strong> /{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>{EXAMPLE_ACCOUNT.password}</strong>
+          </div>
         </div>
       </motion.div>
     </div>
