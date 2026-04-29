@@ -54,7 +54,6 @@ export default function EventModal() {
 
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [locationCoords, setLocationCoords] = useState<LocationCoordinates | undefined>()
-  const [titleError, setTitleError] = useState('')
 
   const color = getCategoryColor(form.category as EventCategory)
 
@@ -62,18 +61,24 @@ export default function EventModal() {
     setForm((prev) => ({ ...prev, [key]: val }))
   }
 
+  function defaultEventTitle(category: EventCategory | undefined): string {
+    const safeCategory = category ?? 'other'
+    const label = CATEGORY_LABELS[safeCategory] ?? 'Event'
+    return `Untitled ${label}`
+  }
+
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
+    const title = form.title?.trim() || defaultEventTitle(form.category as EventCategory | undefined)
     if (!form.title?.trim()) {
-      setTitleError('Event title is required before creating the event.')
-      return
+      setForm((prev) => ({ ...prev, title }))
     }
 
     const payload = {
       ...form,
       startUtc: form.startUtc!,
       endUtc: form.endUtc!,
-      title: form.title!,
+      title,
       category: form.category!,
       flexibility: form.flexibility!,
       isRecurring: form.isRecurring ?? false,
@@ -137,21 +142,12 @@ export default function EventModal() {
             autoFocus
             data-tutorial-id="event-modal-title"
             value={form.title}
-            onChange={(e) => {
-              set('title', e.target.value)
-              if (e.target.value.trim()) {
-                setTitleError('')
-              }
-            }}
+            onChange={(e) => set('title', e.target.value)}
             placeholder="Event title…"
             className="w-full bg-transparent text-text-primary text-lg font-semibold placeholder:text-text-muted outline-none border-b pb-2 transition-colors"
-            style={{ borderColor: titleError ? 'rgba(248,113,113,0.8)' : 'rgba(255,255,255,0.08)', caretColor: color }}
+            style={{ borderColor: 'rgba(255,255,255,0.08)', caretColor: color }}
           />
-          {titleError && (
-            <p className="text-[11px]" style={{ color: '#f87171' }}>
-              {titleError}
-            </p>
-          )}
+          {!form.title?.trim() && <p className="text-[11px] text-text-muted">Blank title will default on save.</p>}
 
           {/* Category chips */}
           <div data-tutorial-id="event-modal-category-section">
@@ -343,12 +339,10 @@ export default function EventModal() {
             <button
               type="submit"
               data-tutorial-id="event-modal-create"
-              disabled={!form.title?.trim()}
               className="px-5 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
               style={{
                 background: `linear-gradient(135deg, ${color}, ${color}bb)`,
-                opacity: form.title?.trim() ? 1 : 0.5,
-                cursor: form.title?.trim() ? 'pointer' : 'not-allowed',
+                opacity: form.title?.trim() ? 1 : 0.85,
               }}
             >
               {isEditing ? 'Save Changes' : 'Create Event'}

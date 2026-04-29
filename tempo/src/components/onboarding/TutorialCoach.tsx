@@ -177,8 +177,9 @@ const CORE_STEPS: TutorialStep[] = [
     description:
       'Now finalize and save the event. This confirms event creation works correctly for the current logged-in user.',
     instructions: [
-      'Check that title and key fields look correct.',
-      'Tap the highlighted Create Event button.',
+      'If the modal is closed, tap New to open it again.',
+      'If title is empty, fill the highlighted title field first.',
+      'Then tap the highlighted Create Event button.',
       'After save, the event should appear in your calendar and this step completes.',
     ],
     requirementLabel: 'Create one event successfully.',
@@ -334,6 +335,15 @@ function mergeRects(a: DOMRect, b: DOMRect): DOMRect {
   return new DOMRect(left, top, right - left, bottom - top)
 }
 
+function getTargetInputValue(targetId: string): string {
+  const el = document.querySelector<HTMLElement>(`[data-tutorial-id="${targetId}"]`)
+  if (!el) return ''
+  if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+    return el.value ?? ''
+  }
+  return ''
+}
+
 function findTimeStepTarget(progress: TutorialProgress) {
   const sectionRect = getVisibleRect('event-modal-time-section')
   const startRect = getVisibleRect('event-modal-time-start')
@@ -368,9 +378,32 @@ function findTimeStepTarget(progress: TutorialProgress) {
   return null
 }
 
+function findCreateEventStepTarget() {
+  const modalCreateRect = getVisibleRect('event-modal-create')
+  const modalTitleRect = getVisibleRect('event-modal-title')
+  const newEventRect = getVisibleRect('header-new-event')
+  const titleValue = getTargetInputValue('event-modal-title').trim()
+
+  if (!modalCreateRect) {
+    if (newEventRect) {
+      return { id: 'header-new-event', rect: newEventRect }
+    }
+    return null
+  }
+
+  if (!titleValue && modalTitleRect) {
+    return { id: 'event-modal-title', rect: modalTitleRect }
+  }
+
+  return { id: 'event-modal-create', rect: modalCreateRect }
+}
+
 function findStepTarget(step: TutorialStep, progress: TutorialProgress) {
   if (step.id === 'calendar-event-time') {
     return findTimeStepTarget(progress)
+  }
+  if (step.id === 'calendar-create-event') {
+    return findCreateEventStepTarget()
   }
 
   const targetIds = step.targetIds

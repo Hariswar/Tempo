@@ -142,6 +142,12 @@ function persistScopedState(email: string | null, scoped: UserScopedState) {
   );
 }
 
+function normalizeEventTitle(title: string | undefined, sequence: number): string {
+  const trimmed = title?.trim();
+  if (trimmed) return trimmed;
+  return `Untitled Event ${sequence}`;
+}
+
 const initialAuthUser = getCurrentAuthUser();
 const initialScopedState = readScopedState(initialAuthUser);
 let eventCounter = initialScopedState.events.length + 1;
@@ -214,8 +220,13 @@ export const useAppStore = create<AppState>()(
           set({ isEventModalOpen: false, editingEvent: null }),
 
         createEvent: (eventData) => {
+          const sequence = eventCounter;
           const id = `e${eventCounter++}`;
-          const newEvent: CalendarEvent = { ...eventData, id };
+          const newEvent: CalendarEvent = {
+            ...eventData,
+            title: normalizeEventTitle(eventData.title, sequence),
+            id,
+          };
           const { events, user } = get();
           const now = new Date();
 
