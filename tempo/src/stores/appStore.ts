@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CalendarEvent, ViewMode, Notification, AIMessage, User, ConflictResolution } from '../types';
 import { MOCK_EVENTS, MOCK_NOTIFICATIONS, MOCK_USER } from '../data/mockData';
-import { EXAMPLE_ACCOUNT, EXAMPLE_ACCOUNT_EVENTS } from '../data/exampleAccountSeed';
+import { EXAMPLE_ACCOUNT, EXAMPLE_ACCOUNT_EVENTS, EXAMPLE_ACCOUNT_NOTIFICATIONS } from '../data/exampleAccountSeed';
 import { detectConflict, resolveConflict } from '../lib/scheduling';
 import { getCurrentAuthUser, type AuthUser } from '../services/authService';
 
@@ -108,16 +108,33 @@ function defaultScopedState(authUser: AuthUser | null): UserScopedState {
   const isExampleAccount = isExampleAccountEmail(authUser?.email);
   return {
     events: isExampleAccount ? [...EXAMPLE_ACCOUNT_EVENTS] : [],
-    notifications: [],
+    notifications: isExampleAccount ? [...EXAMPLE_ACCOUNT_NOTIFICATIONS] : [],
     user: buildStoreUser(authUser),
   };
 }
 
+function eventSeedMergeKey(event: CalendarEvent): string {
+  return `${event.title.trim().toLowerCase()}|${event.startUtc}|${event.endUtc}`;
+}
+
 function mergeMissingExampleSeedEvents(events: CalendarEvent[]): CalendarEvent[] {
-  const existingIds = new Set(events.map((event) => event.id));
-  const missing = EXAMPLE_ACCOUNT_EVENTS.filter((seedEvent) => !existingIds.has(seedEvent.id));
+  const existingKeys = new Set(events.map((event) => eventSeedMergeKey(event)));
+  const missing = EXAMPLE_ACCOUNT_EVENTS.filter((seedEvent) => !existingKeys.has(eventSeedMergeKey(seedEvent)));
   if (missing.length === 0) return events;
   return [...events, ...missing];
+}
+
+function notificationSeedMergeKey(notification: Notification): string {
+  return `${notification.type}|${notification.title.trim().toLowerCase()}|${notification.eventId ?? ''}|${notification.body.trim().toLowerCase()}`;
+}
+
+function mergeMissingExampleSeedNotifications(notifications: Notification[]): Notification[] {
+  const existingKeys = new Set(notifications.map((notification) => notificationSeedMergeKey(notification)));
+  const missing = EXAMPLE_ACCOUNT_NOTIFICATIONS.filter(
+    (seedNotification) => !existingKeys.has(notificationSeedMergeKey(seedNotification))
+  );
+  if (missing.length === 0) return notifications;
+  return [...missing, ...notifications];
 }
 
 function readScopedState(authUser: AuthUser | null): UserScopedState {
@@ -137,10 +154,18 @@ function readScopedState(authUser: AuthUser | null): UserScopedState {
       : isExampleAccount
         ? [...EXAMPLE_ACCOUNT_EVENTS]
         : [...MOCK_EVENTS];
+    const parsedNotifications = Array.isArray(parsed.notifications)
+      ? parsed.notifications
+      : isExampleAccount
+        ? [...EXAMPLE_ACCOUNT_NOTIFICATIONS]
+        : [...MOCK_NOTIFICATIONS];
     const mergedEvents = isExampleAccount ? mergeMissingExampleSeedEvents(parsedEvents) : parsedEvents;
+    const mergedNotifications = isExampleAccount
+      ? mergeMissingExampleSeedNotifications(parsedNotifications)
+      : parsedNotifications;
     const scoped: UserScopedState = {
       events: mergedEvents,
-      notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [...MOCK_NOTIFICATIONS],
+      notifications: mergedNotifications,
       user: persistedUser
         ? {
             ...authUserProfile,
@@ -154,7 +179,10 @@ function readScopedState(authUser: AuthUser | null): UserScopedState {
         : authUserProfile,
     };
 
-    if (isExampleAccount && mergedEvents.length !== parsedEvents.length) {
+    if (
+      isExampleAccount &&
+      (mergedEvents.length !== parsedEvents.length || mergedNotifications.length !== parsedNotifications.length)
+    ) {
       persistScopedState(authUser.email, scoped);
     }
 

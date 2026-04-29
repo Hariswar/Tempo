@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { CheckCircle2, ChevronLeft, ChevronRight, Compass, Hand, X } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
@@ -436,6 +436,8 @@ export default function TutorialCoach() {
   const pending = authUser ? isOnboardingPending(authUser.email) : false
   const [progress, setProgress] = useState<TutorialProgress>(getDefaultTutorialProgress())
   const [target, setTarget] = useState<{ id: string; rect: DOMRect } | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const [panelHeight, setPanelHeight] = useState(320)
 
   const activeEmail = authUser?.email ?? null
 
@@ -623,6 +625,26 @@ export default function TutorialCoach() {
     return () => window.clearTimeout(timeout)
   }, [sessionActive, step?.autoAdvance, stepComplete, isFinalStep, goNext])
 
+  useEffect(() => {
+    if (!sessionActive) return
+    const el = panelRef.current
+    if (!el) return
+    const updateHeight = () => {
+      const nextHeight = el.getBoundingClientRect().height
+      if (nextHeight > 0) {
+        setPanelHeight(nextHeight)
+      }
+    }
+    updateHeight()
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateHeight) : null
+    observer?.observe(el)
+    window.addEventListener('resize', updateHeight)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', updateHeight)
+    }
+  }, [sessionActive, step?.id, progress.step, stepComplete, location.pathname])
+
   const finishTutorial = useCallback(() => {
     if (!activeEmail || !stepComplete) return
     if (progress.mode === 'required') {
@@ -659,14 +681,42 @@ export default function TutorialCoach() {
 
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1280
   const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 720
+  const isMobileViewport = viewportWidth < 768
   const panelWidth = Math.min(380, Math.max(280, viewportWidth - 24))
-  const estimatedPanelHeight = 300
-  const panelLeft = hole ? Math.min(Math.max(12, hole.left), viewportWidth - panelWidth - 12) : 12
-  const panelTop = hole
-    ? hole.top + hole.height + 14 + estimatedPanelHeight <= viewportHeight
-      ? hole.top + hole.height + 14
-      : Math.max(12, hole.top - estimatedPanelHeight - 14)
-    : Math.max(12, viewportHeight - estimatedPanelHeight - 12 - (progress.mode === 'required' ? 0 : 20))
+  const panelMargin = 12
+  const panelGap = 14
+  const clampedPanelHeight = Math.min(panelHeight, viewportHeight - panelMargin * 2)
+  const panelLeftBase = hole ? Math.min(Math.max(panelMargin, hole.left), viewportWidth - panelWidth - panelMargin) : panelMargin
+  const panelLeft = Math.max(panelMargin, Math.min(panelLeftBase, viewportWidth - panelWidth - panelMargin))
+
+  const clampPanelTop = (candidateTop: number) =>
+    Math.max(panelMargin, Math.min(candidateTop, viewportHeight - clampedPanelHeight - panelMargin))
+
+  let panelTop = Math.max(
+    panelMargin,
+    viewportHeight - clampedPanelHeight - panelMargin - (progress.mode === 'required' ? 0 : 20)
+  )
+
+  if (hole) {
+    const belowTop = hole.top + hole.height + panelGap
+    const aboveTop = hole.top - clampedPanelHeight - panelGap
+    const fitsBelow = belowTop + clampedPanelHeight <= viewportHeight - panelMargin
+    const fitsAbove = aboveTop >= panelMargin
+
+    if (isMobileViewport && step.id === 'calendar-create-event' && target?.id === 'event-modal-create') {
+      panelTop = fitsAbove ? aboveTop : panelMargin
+    } else if (fitsBelow) {
+      panelTop = belowTop
+    } else if (fitsAbove) {
+      panelTop = aboveTop
+    } else {
+      const spaceBelow = viewportHeight - panelMargin - belowTop
+      const spaceAbove = hole.top - panelGap - panelMargin
+      panelTop = spaceAbove >= spaceBelow ? aboveTop : belowTop
+    }
+  }
+
+  panelTop = clampPanelTop(panelTop)
 
   return (
     <>
@@ -741,12 +791,15 @@ export default function TutorialCoach() {
       )}
 
       <div
+        ref={panelRef}
         className="fixed z-[90] rounded-2xl p-4"
         style={{
           top: panelTop,
           left: panelLeft,
           width: panelWidth,
           maxWidth: 'calc(100vw - 24px)',
+          maxHeight: 'calc(100vh - 24px)',
+          overflowY: 'auto',
           background: 'rgba(18,18,30,0.98)',
           border: '1px solid rgba(255,106,0,0.35)',
           boxShadow: '0 16px 42px rgba(0,0,0,0.45)',
