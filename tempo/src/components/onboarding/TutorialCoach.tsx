@@ -660,6 +660,21 @@ export default function TutorialCoach() {
     navigate('/profile')
   }, [activeEmail, stepComplete, progress.mode, switchAuthUser, navigate])
 
+  const skipTutorial = useCallback(() => {
+    if (!activeEmail) return
+    if (progress.mode === 'required') {
+      const updated = completeOnboarding(activeEmail)
+      clearTutorialProgress(activeEmail)
+      if (updated) {
+        switchAuthUser(updated)
+      }
+      navigate('/')
+      return
+    }
+    clearTutorialProgress(activeEmail)
+    navigate('/profile')
+  }, [activeEmail, progress.mode, switchAuthUser, navigate])
+
   const closeManualTutorial = useCallback(() => {
     if (!activeEmail || progress.mode !== 'manual') return
     stopTutorialSession(activeEmail)
@@ -812,16 +827,29 @@ export default function TutorialCoach() {
             </div>
             <h3 className="text-sm font-semibold text-text-primary mt-0.5">{step.title}</h3>
           </div>
-          {progress.mode === 'manual' && (
+          <div className="flex items-center gap-1.5">
             <button
-              onClick={closeManualTutorial}
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
-              aria-label="Close tutorial"
+              onClick={skipTutorial}
+              className="px-2.5 h-7 rounded-lg text-[10px] font-semibold"
+              style={{
+                color: '#ffd2a6',
+                border: '1px solid rgba(255,106,0,0.35)',
+                background: 'rgba(255,106,0,0.12)',
+              }}
             >
-              <X size={13} />
+              Skip Tutorial
             </button>
-          )}
+            {progress.mode === 'manual' && (
+              <button
+                onClick={closeManualTutorial}
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
+                aria-label="Close tutorial"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="text-xs text-text-secondary mt-2 leading-relaxed">{step.description}</p>
