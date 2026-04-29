@@ -24,7 +24,7 @@ export default function NotificationsPage() {
       <div className="max-w-3xl mx-auto space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-text-primary">Notifications</h2>
+            <h2 data-tutorial-id="notifications-page-title" className="text-lg font-bold text-text-primary">Notifications</h2>
             <p className="text-xs text-text-muted mt-0.5">
               {unread > 0 ? `${unread} unread` : 'All caught up'}
             </p>
@@ -45,6 +45,7 @@ export default function NotificationsPage() {
         </div>
 
         <div
+          data-tutorial-id="notifications-page-list"
           className="rounded-2xl overflow-hidden"
           style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
         >
@@ -59,6 +60,7 @@ export default function NotificationsPage() {
                 key={notif.id}
                 notif={notif}
                 delay={i * 0.03}
+                isFirst={i === 0}
                 onRead={() => activateNotification(notif)}
                 ctaLabel={getNotificationNavigationPlan(notif, events).ctaLabel}
               />
@@ -75,11 +77,13 @@ function NotificationRow({
   delay,
   onRead,
   ctaLabel,
+  isFirst,
 }: {
   notif: Notification
   delay: number
   onRead: () => void
   ctaLabel: string
+  isFirst: boolean
 }) {
   const config = TYPE_CONFIG[notif.type]
   const Icon = config.icon
@@ -87,6 +91,7 @@ function NotificationRow({
   return (
     <motion.button
       type="button"
+      data-tutorial-id={isFirst ? 'notifications-page-first-item' : undefined}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}

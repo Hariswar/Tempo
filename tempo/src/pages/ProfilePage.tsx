@@ -4,10 +4,11 @@ import { motion } from 'framer-motion'
 import { UserCircle2, Mail, Clock3, Save, Sparkles } from 'lucide-react'
 import { useAppStore } from '../stores/appStore'
 import { updateAuthUserProfile } from '../services/authService'
+import { startTutorialSession } from '../services/tutorialService'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user, updateUserProfile, switchAuthUser } = useAppStore()
+  const { user, events, updateUserProfile, switchAuthUser } = useAppStore()
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -55,6 +56,11 @@ export default function ProfilePage() {
     }
   }
 
+  function handleOpenTutorial() {
+    startTutorialSession(user.email, 'manual', events.length, 0)
+    navigate('/profile')
+  }
+
   return (
     <div className="h-full overflow-y-auto p-5">
       <div className="max-w-2xl mx-auto space-y-4">
@@ -77,6 +83,7 @@ export default function ProfilePage() {
             <label className="block">
               <span className="text-xs text-text-secondary">Display Name</span>
               <input
+                data-tutorial-id="profile-display-name"
                 value={form.displayName}
                 onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
                 className="mt-1 w-full h-10 rounded-lg px-3 text-sm tempo-input"
@@ -173,12 +180,13 @@ export default function ProfilePage() {
 
         <div className="flex justify-between items-center pb-4">
           <button
-            onClick={() => navigate('/onboarding')}
+            data-tutorial-id="profile-open-tutorial"
+            onClick={handleOpenTutorial}
             className="px-4 h-9 rounded-lg text-xs font-medium inline-flex items-center gap-2"
             style={{ background: 'rgba(255,106,0,0.14)', border: '1px solid rgba(255,106,0,0.3)', color: '#ffb347' }}
           >
             <Sparkles size={13} />
-            Open Tutorial
+            Start Tutorial
           </button>
           <button
             onClick={handleSave}

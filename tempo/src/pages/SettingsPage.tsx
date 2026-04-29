@@ -93,7 +93,7 @@ export default function SettingsPage() {
     <div className="h-full overflow-y-auto p-5">
       <div className="max-w-2xl mx-auto space-y-5">
         <div>
-          <h2 className="text-lg font-bold text-text-primary">Settings</h2>
+          <h2 data-tutorial-id="settings-title" className="text-lg font-bold text-text-primary">Settings</h2>
           <p className="text-xs text-text-muted mt-0.5">Customize your Tempo experience</p>
         </div>
 

@@ -213,6 +213,13 @@ export default function AppShell() {
               key={to}
               to={to}
               end={to === '/'}
+              data-tutorial-id={
+                to === '/'
+                  ? 'mobile-nav-calendar'
+                  : to === '/insights'
+                    ? 'mobile-nav-insights'
+                    : 'mobile-nav-settings'
+              }
               style={({ isActive }) => ({
                 display: 'flex',
                 flexDirection: 'column' as const,
@@ -232,6 +239,7 @@ export default function AppShell() {
             </NavLink>
           ))}
           <button
+            data-tutorial-id="mobile-ai-toggle"
             onClick={toggleAIPanel}
             style={{
               display: 'flex',

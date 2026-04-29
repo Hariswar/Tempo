@@ -154,7 +154,7 @@ export default function InsightsDashboard() {
     <div className="h-full overflow-y-auto p-5 space-y-5">
       {/* Title */}
       <div>
-        <h2 className="text-lg font-bold text-text-primary">Productivity Insights</h2>
+        <h2 data-tutorial-id="insights-title" className="text-lg font-bold text-text-primary">Productivity Insights</h2>
         <p className="text-xs text-text-muted mt-0.5">Based on your last 14 days of activity</p>
       </div>
 

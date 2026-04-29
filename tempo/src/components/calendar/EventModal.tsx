@@ -131,6 +131,7 @@ export default function EventModal() {
           {/* Title */}
           <input
             autoFocus
+            data-tutorial-id="event-modal-title"
             value={form.title}
             onChange={(e) => set('title', e.target.value)}
             placeholder="Event title…"
@@ -321,6 +322,7 @@ export default function EventModal() {
             </button>
             <button
               type="submit"
+              data-tutorial-id="event-modal-create"
               className="px-5 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
               style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
             >

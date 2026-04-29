@@ -88,6 +88,15 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
             key={to}
             to={to}
             end={to === '/'}
+            data-tutorial-id={
+              to === '/'
+                ? 'sidebar-nav-calendar'
+                : to === '/insights'
+                  ? 'sidebar-nav-insights'
+                  : to === '/profile'
+                    ? 'sidebar-nav-profile'
+                    : 'sidebar-nav-settings'
+            }
             className={({ isActive }) =>
               cn('sidebar-item', isActive ? 'active' : '')
             }
@@ -112,6 +121,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
 
         {/* AI Assistant */}
         <button
+          data-tutorial-id="sidebar-ai-toggle"
           onClick={() => { toggleAIPanel(); onCloseMobile?.() }}
           title={isCollapsed ? 'AI Assistant' : undefined}
           className="sidebar-item text-left w-full"
@@ -157,6 +167,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       <div className="p-2 flex flex-col gap-1">
         {/* Notifications badge */}
         <button
+          data-tutorial-id="sidebar-bottom-notifications"
           onClick={openNotificationsPage}
           className="sidebar-item w-full relative"
           title={isCollapsed ? 'Notifications' : undefined}

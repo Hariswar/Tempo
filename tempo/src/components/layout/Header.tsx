@@ -86,6 +86,7 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
       {/* Mobile hamburger */}
       {onMenuToggle && (
         <button
+          data-tutorial-id="mobile-menu-toggle"
           onClick={onMenuToggle}
           className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors shrink-0"
           style={{ color: 'var(--text-secondary)' }}
@@ -203,6 +204,7 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
       {/* AI button — desktop only (mobile has bottom nav) */}
       {!isMobile && (
         <button
+          data-tutorial-id="header-ai-toggle"
           onClick={toggleAIPanel}
           className="flex items-center gap-1.5 px-3 h-7 text-xs font-medium rounded-lg transition-all hover:opacity-90"
           style={{
@@ -218,6 +220,7 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
 
       {/* New event */}
       <button
+        data-tutorial-id="header-new-event"
         onClick={() => openEventModal()}
         className="flex items-center gap-1.5 px-3 h-7 text-xs font-semibold rounded-lg transition-all hover:opacity-90 text-white shrink-0"
         style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}
@@ -229,6 +232,7 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
       {/* Notifications */}
       <div ref={notificationsRef} className="relative">
         <button
+          data-tutorial-id="header-notifications"
           onClick={() => setShowNotifications(!showNotifications)}
           className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors relative shrink-0"
           style={{ color: 'var(--text-secondary)' }}
@@ -248,6 +252,7 @@ export default function Header({ onMenuToggle, isMobile }: HeaderProps) {
         <AnimatePresence>
           {showNotifications && (
             <motion.div
+              data-tutorial-id="header-notification-panel"
               initial={{ opacity: 0, y: 8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
