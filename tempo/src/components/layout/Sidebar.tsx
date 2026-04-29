@@ -24,6 +24,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
   const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user, switchAuthUser, setSelectedDate } = useAppStore()
   const navigate = useNavigate()
   const unread = notifications.filter((n) => !n.read).length
+  const isMobileOverlay = Boolean(onCloseMobile)
 
   // On mobile overlay, always show expanded
   const isCollapsed = onCloseMobile ? false : isSidebarCollapsed
@@ -53,8 +54,17 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
     <motion.aside
       animate={{ width: onCloseMobile ? 256 : (isCollapsed ? 64 : 240) }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
-      className="flex flex-col h-full shrink-0 overflow-hidden"
-      style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--border-subtle)' }}
+      className={cn(
+        'flex flex-col h-full shrink-0',
+        isMobileOverlay ? 'overflow-y-auto overflow-x-hidden overscroll-contain' : 'overflow-hidden'
+      )}
+      style={{
+        background: 'var(--sidebar-bg)',
+        borderRight: '1px solid var(--border-subtle)',
+        paddingTop: isMobileOverlay ? 'var(--safe-top)' : undefined,
+        paddingBottom: isMobileOverlay ? 'var(--safe-bottom)' : undefined,
+        WebkitOverflowScrolling: isMobileOverlay ? 'touch' : undefined,
+      }}
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 pt-5 pb-4">
@@ -91,7 +101,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex flex-col gap-1 px-2 flex-1">
+      <nav className={cn('flex flex-col gap-1 px-2', isMobileOverlay ? undefined : 'flex-1')}>
         {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -178,7 +188,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       </nav>
 
       {/* Bottom: user + collapse */}
-      <div className="p-2 flex flex-col gap-1">
+      <div className={cn('p-2 flex flex-col gap-1', isMobileOverlay ? 'pb-3' : undefined)}>
         {/* Notifications badge */}
         <button
           data-tutorial-id="sidebar-bottom-notifications"
