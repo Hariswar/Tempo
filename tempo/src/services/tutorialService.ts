@@ -8,6 +8,7 @@ export interface TutorialProgress {
   interactedTargets: string[]
   aiOpened: boolean
   baselineEventsCount: number
+  eventTitleEntered: boolean
   eventCreated: boolean
 }
 
@@ -32,6 +33,7 @@ export function getDefaultTutorialProgress(): TutorialProgress {
     interactedTargets: [],
     aiOpened: false,
     baselineEventsCount: 0,
+    eventTitleEntered: false,
     eventCreated: false,
   }
 }
@@ -48,6 +50,7 @@ function normalizeProgress(input: Partial<TutorialProgress> | null | undefined):
       typeof input?.baselineEventsCount === 'number' && Number.isFinite(input.baselineEventsCount)
         ? Math.max(0, input.baselineEventsCount)
         : 0,
+    eventTitleEntered: Boolean(input?.eventTitleEntered),
     eventCreated: Boolean(input?.eventCreated),
   }
 }

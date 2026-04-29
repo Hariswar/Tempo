@@ -33,6 +33,11 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
     onCloseMobile?.()
   }
 
+  function openProfilePage() {
+    navigate('/profile')
+    onCloseMobile?.()
+  }
+
   function handleLogout() {
     logoutUser()
     switchAuthUser(null)
@@ -193,7 +198,12 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
         </button>
 
         {/* User avatar */}
-        <div className="sidebar-item">
+        <button
+          onClick={openProfilePage}
+          className="sidebar-item w-full text-left"
+          title={isCollapsed ? 'Profile' : undefined}
+          data-tutorial-id="sidebar-user-profile"
+        >
           <div
             className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white"
             style={{ background: 'linear-gradient(135deg, #ff6a00, #ec4899)' }}
@@ -213,7 +223,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </button>
 
         {/* Collapse button — hide on mobile overlay */}
         {!onCloseMobile && (

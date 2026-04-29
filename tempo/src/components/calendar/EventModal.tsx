@@ -54,6 +54,7 @@ export default function EventModal() {
 
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [locationCoords, setLocationCoords] = useState<LocationCoordinates | undefined>()
+  const [titleError, setTitleError] = useState('')
 
   const color = getCategoryColor(form.category as EventCategory)
 
@@ -63,7 +64,10 @@ export default function EventModal() {
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.title?.trim()) return
+    if (!form.title?.trim()) {
+      setTitleError('Event title is required before creating the event.')
+      return
+    }
 
     const payload = {
       ...form,
@@ -133,14 +137,24 @@ export default function EventModal() {
             autoFocus
             data-tutorial-id="event-modal-title"
             value={form.title}
-            onChange={(e) => set('title', e.target.value)}
+            onChange={(e) => {
+              set('title', e.target.value)
+              if (e.target.value.trim()) {
+                setTitleError('')
+              }
+            }}
             placeholder="Event title…"
             className="w-full bg-transparent text-text-primary text-lg font-semibold placeholder:text-text-muted outline-none border-b pb-2 transition-colors"
-            style={{ borderColor: 'rgba(255,255,255,0.08)', caretColor: color }}
+            style={{ borderColor: titleError ? 'rgba(248,113,113,0.8)' : 'rgba(255,255,255,0.08)', caretColor: color }}
           />
+          {titleError && (
+            <p className="text-[11px]" style={{ color: '#f87171' }}>
+              {titleError}
+            </p>
+          )}
 
           {/* Category chips */}
-          <div>
+          <div data-tutorial-id="event-modal-category-section">
             <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-2">Category</label>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORIES.map((cat) => {
@@ -150,6 +164,7 @@ export default function EventModal() {
                   <button
                     key={cat}
                     type="button"
+                    data-tutorial-id="event-modal-category-chip"
                     onClick={() => set('category', cat)}
                     className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
                     style={{
@@ -167,11 +182,12 @@ export default function EventModal() {
           </div>
 
           {/* Time */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3" data-tutorial-id="event-modal-time-section">
             <div>
               <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">Start</label>
               <input
                 type="datetime-local"
+                data-tutorial-id="event-modal-time-start"
                 value={toLocalDateTimeInput(form.startUtc!)}
                 onChange={(e) => set('startUtc', fromLocalDateTimeInput(e.target.value))}
                 className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
@@ -182,6 +198,7 @@ export default function EventModal() {
               <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">End</label>
               <input
                 type="datetime-local"
+                data-tutorial-id="event-modal-time-end"
                 value={toLocalDateTimeInput(form.endUtc!)}
                 onChange={(e) => set('endUtc', fromLocalDateTimeInput(e.target.value))}
                 className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
@@ -191,13 +208,14 @@ export default function EventModal() {
           </div>
 
           {/* Flexibility */}
-          <div>
+          <div data-tutorial-id="event-modal-flexibility-section">
             <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-2">Flexibility</label>
             <div className="grid grid-cols-3 gap-2">
               {FLEXIBILITY_OPTIONS.map(({ value, label, desc }) => (
                 <button
                   key={value}
                   type="button"
+                  data-tutorial-id="event-modal-flexibility-option"
                   onClick={() => set('flexibility', value)}
                   className="flex flex-col items-center py-2 px-2 rounded-xl text-center transition-all"
                   style={{
@@ -213,9 +231,10 @@ export default function EventModal() {
           </div>
 
           {/* Description */}
-          <div>
+          <div data-tutorial-id="event-modal-description-section">
             <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">Description</label>
             <textarea
+              data-tutorial-id="event-modal-description"
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder="Add notes…"
@@ -226,9 +245,10 @@ export default function EventModal() {
           </div>
 
           {/* Location */}
-          <div>
+          <div data-tutorial-id="event-modal-location-section">
             <button
               type="button"
+              data-tutorial-id="event-modal-location"
               onClick={() => setShowLocationPicker(!showLocationPicker)}
               className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs text-text-secondary transition-colors"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -323,8 +343,13 @@ export default function EventModal() {
             <button
               type="submit"
               data-tutorial-id="event-modal-create"
+              disabled={!form.title?.trim()}
               className="px-5 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
-              style={{ background: `linear-gradient(135deg, ${color}, ${color}bb)` }}
+              style={{
+                background: `linear-gradient(135deg, ${color}, ${color}bb)`,
+                opacity: form.title?.trim() ? 1 : 0.5,
+                cursor: form.title?.trim() ? 'pointer' : 'not-allowed',
+              }}
             >
               {isEditing ? 'Save Changes' : 'Create Event'}
             </button>

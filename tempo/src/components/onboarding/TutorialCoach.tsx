@@ -39,6 +39,10 @@ function hasClicked(progress: TutorialProgress, targetId: string) {
   return progress.interactedTargets.includes(targetId)
 }
 
+function hasClickedAny(progress: TutorialProgress, targetIds: string[]) {
+  return targetIds.some((targetId) => hasClicked(progress, targetId))
+}
+
 const REQUIRED_INTRO_STEP: TutorialStep = {
   id: 'required-intro',
   title: 'Welcome to Tempo',
@@ -88,18 +92,95 @@ const CORE_STEPS: TutorialStep[] = [
     isComplete: ({ progress }) => hasClicked(progress, 'header-new-event'),
   },
   {
+    id: 'calendar-event-title',
+    title: 'Event Title',
+    route: '/',
+    targetIds: ['event-modal-title'],
+    description:
+      'Title is the only required field. Without a title, the event cannot be created.',
+    instructions: [
+      'In the event modal, tap the highlighted title field.',
+      'Type a clear event name (for example: Study Session).',
+      'The Create button stays disabled until this field has text.',
+    ],
+    requirementLabel: 'Type a title in the highlighted field.',
+    isComplete: ({ progress }) => progress.eventTitleEntered,
+  },
+  {
+    id: 'calendar-event-category',
+    title: 'Event Category',
+    route: '/',
+    targetIds: ['event-modal-category-section'],
+    description:
+      'Category controls color coding and helps Tempo classify event types in calendar and insights.',
+    instructions: [
+      'Look at the highlighted category chips.',
+      'Tap one chip to assign a category.',
+      'Choose the option that best matches the event.',
+    ],
+    requirementLabel: 'Tap a category chip.',
+    isComplete: ({ progress }) => hasClicked(progress, 'event-modal-category-chip'),
+  },
+  {
+    id: 'calendar-event-time',
+    title: 'Start and End Time',
+    route: '/',
+    targetIds: ['event-modal-time-start'],
+    description:
+      'Time fields define duration and placement on the calendar.',
+    instructions: [
+      'Tap the highlighted Start field.',
+      'Tap the End field as well.',
+      'Set times that reflect the real event duration.',
+    ],
+    requirementLabel: 'Interact with both Start and End time fields.',
+    isComplete: ({ progress }) =>
+      hasClicked(progress, 'event-modal-time-start') && hasClicked(progress, 'event-modal-time-end'),
+  },
+  {
+    id: 'calendar-event-flexibility',
+    title: 'Flexibility Rules',
+    route: '/',
+    targetIds: ['event-modal-flexibility-section'],
+    description:
+      'Flexibility tells Tempo whether this event can be moved during conflict resolution.',
+    instructions: [
+      'Review Fixed, Semi-flexible, and Flexible.',
+      'Tap one flexibility option.',
+      'Use Fixed for immovable events and Flexible for moveable work.',
+    ],
+    requirementLabel: 'Tap a flexibility option.',
+    isComplete: ({ progress }) => hasClicked(progress, 'event-modal-flexibility-option'),
+  },
+  {
+    id: 'calendar-event-details',
+    title: 'Notes and Location',
+    route: '/',
+    targetIds: ['event-modal-description-section'],
+    description:
+      'Description and location add context so reminders and planning suggestions are more useful.',
+    instructions: [
+      'Tap the Description field to add notes (agenda, checklist, details).',
+      'Tap the Location control to add a place or GPS context.',
+      'These are optional but strongly recommended for actionable schedules.',
+    ],
+    requirementLabel: 'Interact with Description or Location.',
+    isComplete: ({ progress }) =>
+      hasClickedAny(progress, ['event-modal-description', 'event-modal-location']),
+  },
+  {
     id: 'calendar-create-event',
-    title: 'Create an Event',
+    title: 'Create and Save the Event',
     route: '/',
     targetIds: ['event-modal-create'],
     description:
-      'Each account keeps its own events. This step confirms you can add an event from the modal and persist it to your current user.',
+      'Now finalize and save the event. This confirms event creation works correctly for the current logged-in user.',
     instructions: [
-      'In the modal, enter at least an event title.',
+      'Check that title and key fields look correct.',
       'Tap the highlighted Create Event button.',
-      'When the event is saved, this step will unlock.',
+      'After save, the event should appear in your calendar and this step completes.',
     ],
-    requirementLabel: 'Create one event in the modal.',
+    requirementLabel: 'Create one event successfully.',
     isComplete: ({ progress }) => progress.eventCreated,
   },
   {
@@ -216,6 +297,7 @@ function sameProgress(a: TutorialProgress, b: TutorialProgress): boolean {
     a.step !== b.step ||
     a.aiOpened !== b.aiOpened ||
     a.baselineEventsCount !== b.baselineEventsCount ||
+    a.eventTitleEntered !== b.eventTitleEntered ||
     a.eventCreated !== b.eventCreated
   ) {
     return false
@@ -351,6 +433,28 @@ export default function TutorialCoach() {
   }, [sessionActive, updateProgress])
 
   useEffect(() => {
+    if (!sessionActive) return
+    function handleInput(event: Event) {
+      const target = event.target as HTMLInputElement | HTMLTextAreaElement | null
+      if (!target) return
+      const el = target.closest<HTMLElement>('[data-tutorial-id]')
+      if (el?.dataset.tutorialId !== 'event-modal-title') return
+      const value = typeof target.value === 'string' ? target.value : ''
+      if (!value.trim()) return
+      updateProgress((prev) => {
+        if (prev.eventTitleEntered) return prev
+        return {
+          ...prev,
+          eventTitleEntered: true,
+          interactedTargets: nextUnique(prev.interactedTargets, 'event-modal-title'),
+        }
+      })
+    }
+    document.addEventListener('input', handleInput, true)
+    return () => document.removeEventListener('input', handleInput, true)
+  }, [sessionActive, updateProgress])
+
+  useEffect(() => {
     if (!sessionActive || !step) {
       setTarget(null)
       return
@@ -390,7 +494,7 @@ export default function TutorialCoach() {
 
   const goToStepRoute = useCallback(() => {
     if (!step) return
-    if (step.id === 'calendar-create-event') {
+    if (step.targetIds.some((targetId) => targetId.startsWith('event-modal-'))) {
       navigate('/?onboarding=create-event')
       return
     }
