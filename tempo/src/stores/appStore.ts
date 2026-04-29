@@ -176,6 +176,36 @@ function normalizeEventTitle(title: string | undefined, sequence: number): strin
   return `Untitled Event ${sequence}`;
 }
 
+type RepeatRule = 'daily' | 'bi-daily' | 'weekly' | 'bi-weekly' | 'monthly';
+const RECURRING_SERIES_OCCURRENCES = 24;
+
+function normalizeRepeatRule(rule: string | undefined): RepeatRule | null {
+  if (rule === 'daily' || rule === 'bi-daily' || rule === 'weekly' || rule === 'bi-weekly' || rule === 'monthly') {
+    return rule;
+  }
+  return null;
+}
+
+function shiftRecurringWindow(startUtc: string, endUtc: string, rule: RepeatRule, step: number): { startUtc: string; endUtc: string } {
+  const start = new Date(startUtc);
+  const end = new Date(endUtc);
+
+  if (rule === 'monthly') {
+    start.setMonth(start.getMonth() + step);
+    end.setMonth(end.getMonth() + step);
+  } else {
+    const dayStep =
+      rule === 'daily' ? step :
+      rule === 'bi-daily' ? step * 2 :
+      rule === 'weekly' ? step * 7 :
+      step * 14;
+    start.setDate(start.getDate() + dayStep);
+    end.setDate(end.getDate() + dayStep);
+  }
+
+  return { startUtc: start.toISOString(), endUtc: end.toISOString() };
+}
+
 const initialAuthUser = getCurrentAuthUser();
 const initialScopedState = readScopedState(initialAuthUser);
 let eventCounter = initialScopedState.events.length + 1;
@@ -248,13 +278,35 @@ export const useAppStore = create<AppState>()(
           set({ isEventModalOpen: false, editingEvent: null }),
 
         createEvent: (eventData) => {
+          const repeatRule = normalizeRepeatRule(eventData.recurrenceRule);
+          const normalizedInput: Omit<CalendarEvent, 'id'> = {
+            ...eventData,
+            isRecurring: Boolean(repeatRule),
+            recurrenceRule: repeatRule ?? undefined,
+          };
+
           const sequence = eventCounter;
           const id = `e${eventCounter++}`;
           const newEvent: CalendarEvent = {
-            ...eventData,
-            title: normalizeEventTitle(eventData.title, sequence),
+            ...normalizedInput,
+            title: normalizeEventTitle(normalizedInput.title, sequence),
             id,
           };
+
+          const seriesEvents: CalendarEvent[] = [newEvent];
+          if (repeatRule) {
+            for (let step = 1; step <= RECURRING_SERIES_OCCURRENCES; step += 1) {
+              const shifted = shiftRecurringWindow(newEvent.startUtc, newEvent.endUtc, repeatRule, step);
+              const nextId = `e${eventCounter++}`;
+              seriesEvents.push({
+                ...newEvent,
+                id: nextId,
+                startUtc: shifted.startUtc,
+                endUtc: shifted.endUtc,
+              });
+            }
+          }
+
           const { events, user } = get();
           const now = new Date();
 
@@ -263,7 +315,7 @@ export const useAppStore = create<AppState>()(
           if (conflict) {
             const resolution = resolveConflict(newEvent, conflict, events, user, now);
             set((s) => ({
-              events: [...s.events, newEvent],
+              events: [...s.events, ...seriesEvents],
               pendingConflict: resolution,
               isAIPanelOpen: true,
             }));
@@ -277,7 +329,7 @@ export const useAppStore = create<AppState>()(
               conflictResolution: resolution,
             });
           } else {
-            set((s) => ({ events: [...s.events, newEvent] }));
+            set((s) => ({ events: [...s.events, ...seriesEvents] }));
             persistActiveScopedState();
           }
           return newEvent;

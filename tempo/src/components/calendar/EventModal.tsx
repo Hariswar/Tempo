@@ -21,6 +21,24 @@ const FLEXIBILITY_OPTIONS: { value: EventFlexibility; label: string; desc: strin
   { value: 'flexible', label: 'Flexible', desc: 'Can be freely rescheduled' },
 ]
 
+const REPEAT_OPTIONS = [
+  { value: 'none', label: 'Does not repeat' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'bi-daily', label: 'Bi-daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'bi-weekly', label: 'Bi-weekly' },
+  { value: 'monthly', label: 'Monthly' },
+] as const
+
+type RepeatValue = (typeof REPEAT_OPTIONS)[number]['value']
+
+function normalizeRepeatValue(value: string | undefined, isRecurring: boolean | undefined): RepeatValue {
+  if (value === 'daily' || value === 'bi-daily' || value === 'weekly' || value === 'bi-weekly' || value === 'monthly') {
+    return value
+  }
+  return isRecurring ? 'weekly' : 'none'
+}
+
 function toLocalDateTimeInput(iso: string) {
   const d = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -37,6 +55,7 @@ export default function EventModal() {
 
   const defaultStart = editingEvent?.startUtc ?? new Date().toISOString()
   const defaultEnd = editingEvent?.endUtc ?? addHours(new Date(), 1).toISOString()
+  const initialRepeat = normalizeRepeatValue(editingEvent?.recurrenceRule, editingEvent?.isRecurring)
 
   const [form, setForm] = useState<Partial<CalendarEvent>>({
     title: editingEvent?.title ?? '',
@@ -48,7 +67,8 @@ export default function EventModal() {
     locationLabel: editingEvent?.locationLabel ?? '',
     hasExternalAttendees: editingEvent?.hasExternalAttendees ?? false,
     attendeeCount: editingEvent?.attendeeCount ?? 1,
-    isRecurring: editingEvent?.isRecurring ?? false,
+    isRecurring: initialRepeat !== 'none',
+    recurrenceRule: initialRepeat === 'none' ? undefined : initialRepeat,
     deadlineUtc: editingEvent?.deadlineUtc ?? '',
   })
 
@@ -73,6 +93,7 @@ export default function EventModal() {
     if (!form.title?.trim()) {
       setForm((prev) => ({ ...prev, title }))
     }
+    const repeatRule = normalizeRepeatValue(form.recurrenceRule, form.isRecurring)
 
     const payload = {
       ...form,
@@ -81,7 +102,8 @@ export default function EventModal() {
       title,
       category: form.category!,
       flexibility: form.flexibility!,
-      isRecurring: form.isRecurring ?? false,
+      isRecurring: repeatRule !== 'none',
+      recurrenceRule: repeatRule !== 'none' ? repeatRule : undefined,
       hasExternalAttendees: form.hasExternalAttendees ?? false,
       attendeeCount: form.attendeeCount ?? 1,
       isCompleted: false,
@@ -272,23 +294,32 @@ export default function EventModal() {
             )}
           </div>
 
+          {/* Repeat */}
+          <div>
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">Repeat</label>
+            <select
+              value={normalizeRepeatValue(form.recurrenceRule, form.isRecurring)}
+              onChange={(e) => {
+                const next = e.target.value as RepeatValue
+                setForm((prev) => ({
+                  ...prev,
+                  isRecurring: next !== 'none',
+                  recurrenceRule: next !== 'none' ? next : undefined,
+                }))
+              }}
+              className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              {REPEAT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Toggles row */}
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.isRecurring}
-                onChange={(e) => set('isRecurring', e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className="w-8 h-4 rounded-full relative transition-colors"
-                style={{ background: form.isRecurring ? color : 'rgba(255,255,255,0.1)' }}
-              >
-                <div className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform" style={{ left: form.isRecurring ? 17 : 2 }} />
-              </div>
-              <span className="text-xs text-text-secondary">Recurring</span>
-            </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

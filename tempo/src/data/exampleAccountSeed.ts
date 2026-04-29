@@ -158,6 +158,28 @@ const SPECS: EventSeedSpec[] = [
   { date: '2026-05-02', start: '18:10', durationMin: 70, title: 'Household Errands', category: 'errand', flexibility: 'flexible' },
   { date: '2026-05-02', start: '20:00', durationMin: 90, title: 'Weekly Review + Next Week Plan', category: 'deadline_task', flexibility: 'semi_flexible', deadlineUtc: toLocalIso('2026-05-03', '22:00') },
   { date: '2026-05-02', start: '23:20', durationMin: 35, title: 'Shutdown Routine', category: 'other', flexibility: 'flexible' },
+
+  { date: '2026-05-10', start: '07:20', durationMin: 50, title: 'Morning Long Run', category: 'exercise', flexibility: 'flexible' },
+  { date: '2026-05-11', start: '09:10', durationMin: 80, title: 'Team Roadmap Sync', category: 'work_meeting', flexibility: 'fixed', hasExternalAttendees: true, attendeeCount: 8 },
+  { date: '2026-05-12', start: '12:15', durationMin: 55, title: 'Lunch and Mentorship Chat', category: 'meal', flexibility: 'semi_flexible', hasExternalAttendees: true, attendeeCount: 2 },
+  { date: '2026-05-13', start: '14:00', durationMin: 110, title: 'Focus Block: API Refactor', category: 'focus_block', flexibility: 'semi_flexible' },
+  { date: '2026-05-14', start: '18:40', durationMin: 70, title: 'Store Pickup and Errands', category: 'errand', flexibility: 'flexible' },
+  { date: '2026-05-15', start: '22:10', durationMin: 60, title: 'Applied AI Study Session', category: 'class', flexibility: 'flexible' },
+  { date: '2026-05-16', start: '08:30', durationMin: 45, title: 'Weekend Commute', category: 'commute', flexibility: 'fixed', locationLabel: 'Home -> Library' },
+  { date: '2026-05-17', start: '10:00', durationMin: 85, title: 'Research Writing Sprint', category: 'research_meeting', flexibility: 'semi_flexible' },
+  { date: '2026-05-18', start: '13:30', durationMin: 95, title: 'Design Review Workshop', category: 'work_meeting', flexibility: 'fixed', hasExternalAttendees: true, attendeeCount: 6 },
+  { date: '2026-05-19', start: '20:30', durationMin: 85, title: 'Project Deep Work Session', category: 'focus_block', flexibility: 'flexible' },
+  { date: '2026-05-20', start: '23:05', durationMin: 40, title: 'End-of-Day Reflection', category: 'personal', flexibility: 'flexible' },
+  { date: '2026-05-21', start: '06:40', durationMin: 45, title: 'Strength Circuit', category: 'exercise', flexibility: 'flexible' },
+  { date: '2026-05-22', start: '11:20', durationMin: 60, title: 'Client Office Hours', category: 'work_meeting', flexibility: 'fixed', hasExternalAttendees: true, attendeeCount: 3 },
+  { date: '2026-05-23', start: '16:10', durationMin: 75, title: 'Community Seminar', category: 'class', flexibility: 'fixed' },
+  { date: '2026-05-24', start: '19:15', durationMin: 90, title: 'Family Dinner Night', category: 'personal', flexibility: 'fixed' },
+  { date: '2026-05-25', start: '00:30', durationMin: 35, title: 'Overnight System Check', category: 'other', flexibility: 'fixed' },
+  { date: '2026-05-26', start: '09:45', durationMin: 70, title: 'Research Collaboration Call', category: 'research_meeting', flexibility: 'fixed', hasExternalAttendees: true, attendeeCount: 4 },
+  { date: '2026-05-27', start: '15:30', durationMin: 105, title: 'Focus Block: Finalize Demo', category: 'focus_block', flexibility: 'semi_flexible' },
+  { date: '2026-05-28', start: '17:55', durationMin: 65, title: 'Household Supply Run', category: 'errand', flexibility: 'flexible' },
+  { date: '2026-05-29', start: '21:40', durationMin: 75, title: 'Evening Literature Review', category: 'class', flexibility: 'flexible' },
+  { date: '2026-05-30', start: '13:00', durationMin: 120, title: 'Monthly Planning Block', category: 'deadline_task', flexibility: 'semi_flexible', deadlineUtc: toLocalIso('2026-05-31', '22:00') },
 ]
 
 export const EXAMPLE_ACCOUNT_EVENTS: CalendarEvent[] = SPECS.map((spec, index) =>
