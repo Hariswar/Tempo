@@ -8,20 +8,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#08080f',
-        surface: '#0f0f1a',
-        card: '#13131f',
-        hover: '#1a1a2e',
-        border: 'rgba(255,255,255,0.06)',
+        background: 'var(--bg-base)',
+        surface: 'var(--bg-surface)',
+        card: 'var(--bg-card)',
+        hover: 'var(--bg-hover)',
+        border: 'var(--border-subtle)',
         accent: {
-          DEFAULT: '#ff6a00',
-          hover: '#ff4d00',
-          muted: 'rgba(255,106,0,0.15)',
+          DEFAULT: 'var(--accent-1)',
+          hover: 'var(--accent-2)',
+          muted: 'var(--accent-muted)',
         },
         text: {
-          primary: '#f1f0f8',
-          secondary: '#8b8aa8',
-          muted: '#4a4964',
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
         },
       },
       fontFamily: {
