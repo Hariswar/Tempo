@@ -200,26 +200,26 @@ export default function EventModal() {
           </div>
 
           {/* Time */}
-          <div className="grid grid-cols-2 gap-3" data-tutorial-id="event-modal-time-section">
-            <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-tutorial-id="event-modal-time-section">
+            <div className="min-w-0">
               <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">Start</label>
               <input
                 type="datetime-local"
                 data-tutorial-id="event-modal-time-start"
                 value={toLocalDateTimeInput(form.startUtc!)}
                 onChange={(e) => set('startUtc', fromLocalDateTimeInput(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
+                className="w-full min-w-0 px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">End</label>
               <input
                 type="datetime-local"
                 data-tutorial-id="event-modal-time-end"
                 value={toLocalDateTimeInput(form.endUtc!)}
                 onChange={(e) => set('endUtc', fromLocalDateTimeInput(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
+                className="w-full min-w-0 px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
             </div>
