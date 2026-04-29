@@ -107,8 +107,12 @@ function optimizeMutations(params: {
   }))
 
   const pendingRangeAdds: Array<{ startMs: number; endMs: number }> = []
-  const isWorkoutBatchRequest = /workout|gym|strength|muscle|split|training/i.test(message)
-  const workoutDayUsage = new Set<string>()
+  const createMutations = rawMutations.filter((mutation) => mutation.type === 'CREATE_EVENT')
+  const isMultiEventRequest =
+    createMutations.length >= 2 &&
+    /(multiple|several|few|couple|batch|plan|weekly|week|across|spread|routine)/i.test(message)
+  const isWorkoutBatchRequest = /workout|gym|strength|muscle|split|training|cardio/i.test(message)
+  const usedDayKeys = new Set<string>()
 
   function reserveRange(startUtc: string, endUtc: string) {
     const startMs = new Date(startUtc).getTime()
@@ -116,7 +120,12 @@ function optimizeMutations(params: {
     pendingRangeAdds.push({ startMs, endMs })
   }
 
-  function findSlot(durationMs: number, preferredStart: Date, eventIdToIgnore?: string, preferDistinctDays = false): { startUtc: string; endUtc: string } {
+  function findSlot(
+    durationMs: number,
+    preferredStart: Date,
+    eventIdToIgnore?: string,
+    preferDistinctDays = false
+  ): { startUtc: string; endUtc: string } {
     const candidateDays = 14
     const stepMs = 30 * 60 * 1000
     const anchorDay = new Date(preferredStart)
@@ -160,7 +169,7 @@ function optimizeMutations(params: {
         const minute = slotStart.getHours() * 60 + slotStart.getMinutes()
         const distancePenalty = Math.abs(minute - preferredMinute) / 15
         const dayPenalty = dayOffset * 4
-        const distinctDayPenalty = preferDistinctDays && workoutDayUsage.has(dayKey) ? 12 : 0
+        const distinctDayPenalty = preferDistinctDays && usedDayKeys.has(dayKey) ? 12 : 0
         const score = dayPenalty + distancePenalty + distinctDayPenalty
 
         if (!best || score < best.score) {
@@ -190,10 +199,13 @@ function optimizeMutations(params: {
       const originalDuration = originalEnd.getTime() - originalStart.getTime()
       const durationMs = Math.min(Math.max(originalDuration > 0 ? originalDuration : 60 * 60 * 1000, 30 * 60 * 1000), 3 * 60 * 60 * 1000)
       const isWorkout = mutation.category === 'exercise' || /workout|gym|strength|cardio|chest|back|legs|shoulders|arms/i.test(mutation.title)
-      const slot = findSlot(durationMs, originalStart, undefined, isWorkoutBatchRequest && isWorkout)
+      const shouldSpreadAcrossDays =
+        isMultiEventRequest &&
+        (isWorkoutBatchRequest || mutation.category !== 'work_meeting')
+      const slot = findSlot(durationMs, originalStart, undefined, shouldSpreadAcrossDays)
       reserveRange(slot.startUtc, slot.endUtc)
-      if (isWorkoutBatchRequest && isWorkout) {
-        workoutDayUsage.add(new Date(slot.startUtc).toDateString())
+      if (shouldSpreadAcrossDays || isWorkout) {
+        usedDayKeys.add(new Date(slot.startUtc).toDateString())
       }
 
       if (slot.startUtc !== mutation.startUtc || slot.endUtc !== mutation.endUtc) {
