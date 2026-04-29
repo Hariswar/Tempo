@@ -77,11 +77,7 @@ function isExampleAccountEmail(email?: string | null): boolean {
   return normalizeEmail(email) === EXAMPLE_ACCOUNT.email.toLowerCase();
 }
 
-function getInitialSelectedDate(authUser: AuthUser | null, events: CalendarEvent[]): string {
-  const isExampleAccount = isExampleAccountEmail(authUser?.email);
-  if (isExampleAccount && events.length > 0) {
-    return events[0].startUtc;
-  }
+function getInitialSelectedDate(_authUser: AuthUser | null, _events: CalendarEvent[]): string {
   return new Date().toISOString();
 }
 

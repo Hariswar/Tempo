@@ -21,7 +21,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onCloseMobile }: SidebarProps) {
-  const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user, switchAuthUser } = useAppStore()
+  const { isSidebarCollapsed, toggleSidebar, toggleAIPanel, notifications, user, switchAuthUser, setSelectedDate } = useAppStore()
   const navigate = useNavigate()
   const unread = notifications.filter((n) => !n.read).length
 
@@ -43,6 +43,10 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
     switchAuthUser(null)
     navigate('/auth')
     onCloseMobile?.()
+  }
+
+  function handleCalendarNavClick() {
+    setSelectedDate(new Date().toISOString())
   }
 
   return (
@@ -106,7 +110,12 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
               cn('sidebar-item', isActive ? 'active' : '')
             }
             title={isCollapsed ? label : undefined}
-            onClick={onCloseMobile}
+            onClick={() => {
+              if (to === '/') {
+                handleCalendarNavClick()
+              }
+              onCloseMobile?.()
+            }}
           >
             <Icon size={16} className="shrink-0" />
             <AnimatePresence>

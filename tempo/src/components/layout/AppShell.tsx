@@ -22,7 +22,7 @@ interface BeforeInstallPromptEventLike extends Event {
 }
 
 export default function AppShell() {
-  const { isAIPanelOpen, isEventModalOpen, toggleAIPanel } = useAppStore()
+  const { isAIPanelOpen, isEventModalOpen, toggleAIPanel, setSelectedDate } = useAppStore()
   const isMobile = useIsMobile()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEventLike | null>(null)
@@ -89,6 +89,10 @@ export default function AppShell() {
   function dismissInstallBanner() {
     sessionStorage.setItem('tempo-install-banner-dismissed', '1')
     setShowInstallBanner(false)
+  }
+
+  function handleCalendarNavClick() {
+    setSelectedDate(new Date().toISOString())
   }
 
   return (
@@ -213,6 +217,11 @@ export default function AppShell() {
               key={to}
               to={to}
               end={to === '/'}
+              onClick={() => {
+                if (to === '/') {
+                  handleCalendarNavClick()
+                }
+              }}
               data-tutorial-id={
                 to === '/'
                   ? 'mobile-nav-calendar'

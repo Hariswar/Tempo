@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import {
   startOfWeek, endOfWeek, eachDayOfInterval, format,
   isToday
@@ -11,6 +11,7 @@ import { getCategoryColor, minuteSinceStartOfDay, isSameDay, cn } from '../../li
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const HOUR_HEIGHT = 64 // px per hour
 const START_HOUR = 0
+const DEFAULT_FOCUS_MINUTES = 9 * 60
 
 interface ColumnEvent extends CalendarEvent {
   column: number
@@ -73,6 +74,7 @@ function layoutEvents(events: CalendarEvent[]): ColumnEvent[] {
 export default function WeekView() {
   const { selectedDate, events, selectEvent, openEventModal, setSelectedDate, viewMode } = useAppStore()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const hasAutoScrolledRef = useRef(false)
   const now = new Date()
 
   const days = useMemo(() => {
@@ -90,6 +92,29 @@ export default function WeekView() {
 
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
   const nowTop = (nowMinutes - START_HOUR * 60) * (HOUR_HEIGHT / 60)
+
+  useEffect(() => {
+    if (hasAutoScrolledRef.current) return
+    const scroller = scrollRef.current
+    if (!scroller) return
+
+    const focusMinutes =
+      (viewMode === 'day' && isToday(new Date(selectedDate))) ||
+      (viewMode === 'week' && days.some((day) => isToday(day)))
+        ? nowMinutes
+        : DEFAULT_FOCUS_MINUTES
+
+    const focusTop = (focusMinutes - START_HOUR * 60) * (HOUR_HEIGHT / 60)
+
+    const raf = window.requestAnimationFrame(() => {
+      const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight)
+      const centeredTop = focusTop - scroller.clientHeight / 2
+      scroller.scrollTop = Math.max(0, Math.min(maxScrollTop, centeredTop))
+      hasAutoScrolledRef.current = true
+    })
+
+    return () => window.cancelAnimationFrame(raf)
+  }, [days, nowMinutes, selectedDate, viewMode])
 
   function handleSlotClick(day: Date, hour: number) {
     const start = new Date(day)
