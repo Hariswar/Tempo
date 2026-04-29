@@ -62,6 +62,165 @@ function formatDayTime(startUtc: string, endUtc: string): string {
   return `${format(new Date(startUtc), 'EEE, MMM d h:mm a')} - ${format(new Date(endUtc), 'h:mm a')}`
 }
 
+function parseClockToMinutes(raw: string | undefined): number | null {
+  if (!raw) return null
+  const normalized = raw.trim().toLowerCase().replace(/\s+/g, '')
+  const match = normalized.match(/^(\d{1,2})(?::(\d{2}))?(am|pm)?$/)
+  if (!match) return null
+  const hourRaw = Number(match[1])
+  const minuteRaw = Number(match[2] ?? '0')
+  const suffix = match[3]
+  if (!Number.isFinite(hourRaw) || !Number.isFinite(minuteRaw) || minuteRaw < 0 || minuteRaw > 59) return null
+
+  if (!suffix) {
+    if (hourRaw > 23) return null
+    return hourRaw * 60 + minuteRaw
+  }
+
+  if (hourRaw < 1 || hourRaw > 12) return null
+  let hour = hourRaw % 12
+  if (suffix === 'pm') hour += 12
+  return hour * 60 + minuteRaw
+}
+
+function setDateMinutes(base: Date, minutes: number): Date {
+  const next = new Date(base)
+  next.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
+  return next
+}
+
+function isSameLocalDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
+function findEventForMoveByText(params: {
+  message: string
+  events: Array<{ id: string; title: string; startUtc: string; endUtc: string; isCompleted?: boolean }>
+  now: Date
+}): { eventId: string; targetMinutes: number } | null {
+  const { message, events, now } = params
+  const lower = message.toLowerCase()
+  if (!/\b(move|reschedule|shift)\b/.test(lower)) return null
+
+  const timeMatches = [...lower.matchAll(/\b(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/g)]
+  if (timeMatches.length < 2) return null
+
+  const sourceMinutes = parseClockToMinutes(timeMatches[0]?.[1])
+  const targetMinutes = parseClockToMinutes(timeMatches[1]?.[1])
+  if (sourceMinutes == null || targetMinutes == null) return null
+
+  const todayOnly = /\btoday\b/.test(lower)
+  const subjectPartMatch = lower.match(/\b(?:move|reschedule|shift)\b\s+(.*?)\s+\bto\b/)
+  const subjectPart = subjectPartMatch?.[1] ?? ''
+  const subjectKeywords = subjectPart
+    .replace(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length >= 3 && !['the', 'and', 'for', 'with', 'from', 'that', 'this', 'event', 'events', 'my'].includes(token))
+
+  let best: { eventId: string; score: number } | null = null
+  for (const event of events) {
+    if (event.isCompleted) continue
+    const start = new Date(event.startUtc)
+    if (todayOnly && !isSameLocalDay(start, now)) continue
+    if (start < now && !todayOnly) continue
+
+    const startMinutes = start.getHours() * 60 + start.getMinutes()
+    const timeDiff = Math.abs(startMinutes - sourceMinutes)
+    if (timeDiff > 75) continue
+
+    let score = 100 - timeDiff
+    if (todayOnly && isSameLocalDay(start, now)) score += 20
+    const titleLower = event.title.toLowerCase()
+    if (subjectKeywords.length > 0) {
+      const keywordHits = subjectKeywords.reduce((acc, kw) => acc + (titleLower.includes(kw) ? 1 : 0), 0)
+      score += keywordHits * 15
+      if (keywordHits === 0) score -= 25
+    }
+
+    if (!best || score > best.score) {
+      best = { eventId: event.id, score }
+    }
+  }
+
+  if (!best) return null
+  return { eventId: best.eventId, targetMinutes }
+}
+
+function buildDirectTimeMutations(params: {
+  message: string
+  events: Array<{ id: string; title: string; startUtc: string; endUtc: string; flexibility: string; isCompleted?: boolean }>
+  now: Date
+}): { content: string; mutations: AIMutation[] } | null {
+  const { message, events, now } = params
+  const lower = message.toLowerCase()
+
+  const deleteMatch = lower.match(/\b(delete|remove)\b.*\b(after|before)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b.*\btoday\b/)
+  if (deleteMatch) {
+    const boundaryMinutes = parseClockToMinutes(deleteMatch[3])
+    if (boundaryMinutes != null) {
+      const direction = deleteMatch[2]
+      const targets = events.filter((event) => {
+        if (event.isCompleted) return false
+        const start = new Date(event.startUtc)
+        if (!isSameLocalDay(start, now)) return false
+        const minutes = start.getHours() * 60 + start.getMinutes()
+        return direction === 'after' ? minutes > boundaryMinutes : minutes < boundaryMinutes
+      })
+
+      if (targets.length === 0) {
+        return {
+          content: `I could not find any events ${direction} ${deleteMatch[3]} today.`,
+          mutations: [],
+        }
+      }
+
+      return {
+        content: `I found ${targets.length} event${targets.length > 1 ? 's' : ''} ${direction} ${deleteMatch[3]} today and prepared them for your confirmation.`,
+        mutations: targets.map((event) => ({
+          type: 'DELETE_EVENT',
+          eventId: event.id,
+        })),
+      }
+    }
+  }
+
+  const moveMatch = findEventForMoveByText({ message, events, now })
+  if (moveMatch) {
+    const event = events.find((e) => e.id === moveMatch.eventId)
+    if (!event) return null
+    if (event.flexibility === 'fixed') {
+      return {
+        content: `"${event.title}" is fixed, so I did not prepare a move.`,
+        mutations: [],
+      }
+    }
+    const sourceStart = new Date(event.startUtc)
+    const sourceEnd = new Date(event.endUtc)
+    const durationMs = Math.max(30 * 60 * 1000, sourceEnd.getTime() - sourceStart.getTime())
+    const targetStart = setDateMinutes(sourceStart, moveMatch.targetMinutes)
+    const targetEnd = new Date(targetStart.getTime() + durationMs)
+
+    return {
+      content: `I prepared a move for "${event.title}" to ${format(targetStart, 'h:mm a')} on ${format(targetStart, 'EEE, MMM d')}. Please review and confirm.`,
+      mutations: [
+        {
+          type: 'MOVE_EVENT',
+          eventId: event.id,
+          startUtc: targetStart.toISOString(),
+          endUtc: targetEnd.toISOString(),
+        },
+      ],
+    }
+  }
+
+  return null
+}
+
 function mutationNeedsConfirmation(m: AIMutation): boolean {
   return m.type === 'CREATE_EVENT' || m.type === 'MOVE_EVENT' || m.type === 'UPDATE_EVENT' || m.type === 'DELETE_EVENT'
 }
@@ -298,6 +457,32 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
     setIsTyping(true)
 
     try {
+      const directPlan = buildDirectTimeMutations({
+        message: text,
+        events,
+        now: new Date(),
+      })
+      if (directPlan) {
+        if (directPlan.content.trim()) {
+          addAIMessage({
+            id: `msg-${Date.now()}-ai-direct`,
+            role: 'assistant',
+            content: directPlan.content,
+            timestamp: new Date().toISOString(),
+          })
+        }
+        if (directPlan.mutations.length > 0) {
+          setPendingPlan({
+            id: `plan-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            content: `I prepared ${directPlan.mutations.length} change${directPlan.mutations.length > 1 ? 's' : ''}. Review these changes, then tap Approve to apply or Cancel to keep your calendar unchanged.`,
+            mutations: directPlan.mutations,
+          })
+        }
+        setIsTyping(false)
+        return
+      }
+
       const response = await sendAIMessage(
         text,
         events,
