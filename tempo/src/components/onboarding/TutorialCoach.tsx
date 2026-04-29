@@ -318,12 +318,65 @@ function nextUnique(list: string[], value: string) {
   return list.includes(value) ? list : [...list, value]
 }
 
-function findStepTarget(targetIds: string[]) {
+function getVisibleRect(targetId: string): DOMRect | null {
+  const el = document.querySelector<HTMLElement>(`[data-tutorial-id="${targetId}"]`)
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) return null
+  return rect
+}
+
+function mergeRects(a: DOMRect, b: DOMRect): DOMRect {
+  const left = Math.min(a.left, b.left)
+  const top = Math.min(a.top, b.top)
+  const right = Math.max(a.right, b.right)
+  const bottom = Math.max(a.bottom, b.bottom)
+  return new DOMRect(left, top, right - left, bottom - top)
+}
+
+function findTimeStepTarget(progress: TutorialProgress) {
+  const sectionRect = getVisibleRect('event-modal-time-section')
+  const startRect = getVisibleRect('event-modal-time-start')
+  const endRect = getVisibleRect('event-modal-time-end')
+  const startClicked = hasClicked(progress, 'event-modal-time-start')
+  const endClicked = hasClicked(progress, 'event-modal-time-end')
+
+  if (startClicked && !endClicked && endRect) {
+    return { id: 'event-modal-time-end', rect: endRect }
+  }
+
+  if (endClicked && !startClicked && startRect) {
+    return { id: 'event-modal-time-start', rect: startRect }
+  }
+
+  if (sectionRect) {
+    return { id: 'event-modal-time-section', rect: sectionRect }
+  }
+
+  if (startRect && endRect) {
+    return { id: 'event-modal-time-section', rect: mergeRects(startRect, endRect) }
+  }
+
+  if (startRect) {
+    return { id: 'event-modal-time-start', rect: startRect }
+  }
+
+  if (endRect) {
+    return { id: 'event-modal-time-end', rect: endRect }
+  }
+
+  return null
+}
+
+function findStepTarget(step: TutorialStep, progress: TutorialProgress) {
+  if (step.id === 'calendar-event-time') {
+    return findTimeStepTarget(progress)
+  }
+
+  const targetIds = step.targetIds
   for (const targetId of targetIds) {
-    const el = document.querySelector<HTMLElement>(`[data-tutorial-id="${targetId}"]`)
-    if (!el) continue
-    const rect = el.getBoundingClientRect()
-    if (rect.width <= 0 || rect.height <= 0) continue
+    const rect = getVisibleRect(targetId)
+    if (!rect) continue
     return {
       id: targetId,
       rect,
@@ -461,7 +514,7 @@ export default function TutorialCoach() {
       return
     }
     function refreshTarget() {
-      setTarget(findStepTarget(step.targetIds))
+      setTarget(findStepTarget(step, progress))
     }
 
     refreshTarget()
@@ -473,7 +526,7 @@ export default function TutorialCoach() {
       window.removeEventListener('resize', refreshTarget)
       window.removeEventListener('scroll', refreshTarget, true)
     }
-  }, [sessionActive, step?.id, location.pathname])
+  }, [sessionActive, step?.id, location.pathname, progress.interactedTargets])
 
   useEffect(() => {
     if (!sessionActive || !step || !target) return
