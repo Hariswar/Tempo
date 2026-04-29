@@ -95,9 +95,9 @@ html.light {
   --accent-muted: rgba(255,106,0,0.10);
 
   /* Text */
-  --text-primary:   #1a1a2e;
-  --text-secondary: #4a4870;
-  --text-muted:     #9b99b8;
+  --text-primary:   #221f2a;
+  --text-secondary: #4f4a5b;
+  --text-muted:     #6f687a;
 
   /* Sidebar / Header bg */
   --sidebar-bg: #ffffff;
