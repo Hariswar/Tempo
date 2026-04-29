@@ -36,9 +36,55 @@ function buildExampleAuthUser(): AuthUser {
 
 function ensureExampleAuthUser(users: AuthUser[]): AuthUser[] {
   const exampleEmail = EXAMPLE_ACCOUNT.email.toLowerCase()
-  const hasExample = users.some((u) => u.email.toLowerCase() === exampleEmail)
-  if (hasExample) return users
-  return [...users, buildExampleAuthUser()]
+  const example = buildExampleAuthUser()
+  let changed = false
+  let seenExample = false
+
+  const normalized = users
+    .filter((u) => {
+      const isExample = u.email.toLowerCase() === exampleEmail
+      if (isExample && seenExample) {
+        changed = true
+        return false
+      }
+      if (isExample) {
+        seenExample = true
+      }
+      return true
+    })
+    .map((u) => {
+      const isExample = u.email.toLowerCase() === exampleEmail
+      if (!isExample) return u
+
+      const merged: AuthUser = {
+        ...u,
+        id: example.id,
+        name: example.name,
+        email: example.email,
+        password: example.password,
+        profile: example.profile,
+        onboardingPending: false,
+      }
+
+      if (
+        merged.id !== u.id ||
+        merged.name !== u.name ||
+        merged.email !== u.email ||
+        merged.password !== u.password ||
+        merged.onboardingPending !== u.onboardingPending ||
+        JSON.stringify(merged.profile) !== JSON.stringify(u.profile)
+      ) {
+        changed = true
+      }
+      return merged
+    })
+
+  if (!seenExample) {
+    changed = true
+    normalized.push(example)
+  }
+
+  return changed ? normalized : users
 }
 
 function readUsers(): AuthUser[] {
