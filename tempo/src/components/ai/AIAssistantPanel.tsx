@@ -4,7 +4,7 @@ import { X, Sparkles, Send, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAppStore } from '../../stores/appStore'
 import type { AIMessage, ConflictResolution, RescheduleOption } from '../../types'
-import { sendAIMessage } from '../../services/aiService'
+import { sendAIMessage, type AIMutation } from '../../services/aiService'
 import { getCategoryColor } from '../../lib/utils'
 
 const WELCOME_MESSAGE: AIMessage = {
@@ -26,6 +26,226 @@ const QUICK_PROMPTS = [
   'Show my deadlines',
 ]
 
+type PendingMutationPlan = {
+  id: string
+  createdAt: string
+  content: string
+  mutations: AIMutation[]
+}
+
+function parseHm(value: string | undefined, fallback: number): number {
+  if (!value) return fallback
+  const [h, m] = value.split(':').map(Number)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return fallback
+  return h * 60 + m
+}
+
+function overlapsQuietHours(start: Date, end: Date, quietStartMin: number, quietEndMin: number): boolean {
+  const current = new Date(start)
+  while (current < end) {
+    const minute = current.getHours() * 60 + current.getMinutes()
+    const inQuiet =
+      quietStartMin <= quietEndMin
+        ? minute >= quietStartMin && minute < quietEndMin
+        : minute >= quietStartMin || minute < quietEndMin
+    if (inQuiet) return true
+    current.setMinutes(current.getMinutes() + 30)
+  }
+  return false
+}
+
+function hasOverlap(startMs: number, endMs: number, ranges: Array<{ startMs: number; endMs: number }>): boolean {
+  return ranges.some((range) => startMs < range.endMs && endMs > range.startMs)
+}
+
+function formatDayTime(startUtc: string, endUtc: string): string {
+  return `${format(new Date(startUtc), 'EEE, MMM d h:mm a')} - ${format(new Date(endUtc), 'h:mm a')}`
+}
+
+function mutationNeedsConfirmation(m: AIMutation): boolean {
+  if (m.type === 'MOVE_EVENT' || m.type === 'DELETE_EVENT') return true
+  if (m.type === 'UPDATE_EVENT') {
+    const keys = Object.keys(m.updates || {})
+    return keys.some((key) => key === 'startUtc' || key === 'endUtc')
+  }
+  return false
+}
+
+function optimizeMutations(params: {
+  rawMutations: AIMutation[]
+  events: Array<{
+    id: string
+    title: string
+    startUtc: string
+    endUtc: string
+    category: string
+    flexibility: string
+  }>
+  message: string
+  now: Date
+  workdayStart: string
+  workdayEnd: string
+  quietStart: string
+  quietEnd: string
+}): { mutations: AIMutation[]; notes: string[] } {
+  const {
+    rawMutations, events, message, now, workdayStart, workdayEnd, quietStart, quietEnd,
+  } = params
+
+  const notes: string[] = []
+  if (rawMutations.length === 0) return { mutations: [], notes }
+
+  const workStartMin = Math.max(6 * 60, parseHm(workdayStart, 8 * 60))
+  const workEndMin = Math.min(22 * 60, parseHm(workdayEnd, 22 * 60))
+  const quietStartMin = parseHm(quietStart, 23 * 60)
+  const quietEndMin = parseHm(quietEnd, 7 * 60)
+
+  const occupiedRanges = events.map((event) => ({
+    startMs: new Date(event.startUtc).getTime(),
+    endMs: new Date(event.endUtc).getTime(),
+    eventId: event.id,
+  }))
+
+  const pendingRangeAdds: Array<{ startMs: number; endMs: number }> = []
+  const isWorkoutBatchRequest = /workout|gym|strength|muscle|split|training/i.test(message)
+  const workoutDayUsage = new Set<string>()
+
+  function reserveRange(startUtc: string, endUtc: string) {
+    const startMs = new Date(startUtc).getTime()
+    const endMs = new Date(endUtc).getTime()
+    pendingRangeAdds.push({ startMs, endMs })
+  }
+
+  function findSlot(durationMs: number, preferredStart: Date, eventIdToIgnore?: string, preferDistinctDays = false): { startUtc: string; endUtc: string } {
+    const candidateDays = 14
+    const stepMs = 30 * 60 * 1000
+    const anchorDay = new Date(preferredStart)
+    anchorDay.setHours(0, 0, 0, 0)
+    const preferredMinute = preferredStart.getHours() * 60 + preferredStart.getMinutes()
+
+    let best: { startUtc: string; endUtc: string; score: number } | null = null
+
+    for (let dayOffset = 0; dayOffset <= candidateDays; dayOffset += 1) {
+      const day = new Date(anchorDay.getTime() + dayOffset * 24 * 60 * 60 * 1000)
+      const dayKey = day.toDateString()
+      const dayStart = new Date(day)
+      dayStart.setHours(Math.floor(workStartMin / 60), workStartMin % 60, 0, 0)
+      const dayEnd = new Date(day)
+      dayEnd.setHours(Math.floor(workEndMin / 60), workEndMin % 60, 0, 0)
+      let cursor = dayStart.getTime()
+      const latestStart = dayEnd.getTime() - durationMs
+
+      while (cursor <= latestStart) {
+        const slotStart = new Date(cursor)
+        const slotEnd = new Date(cursor + durationMs)
+        if (slotStart < now) {
+          cursor += stepMs
+          continue
+        }
+
+        if (overlapsQuietHours(slotStart, slotEnd, quietStartMin, quietEndMin)) {
+          cursor += stepMs
+          continue
+        }
+
+        const overlapBase = occupiedRanges
+          .filter((range) => range.eventId !== eventIdToIgnore)
+          .map((range) => ({ startMs: range.startMs, endMs: range.endMs }))
+        const overlapPending = pendingRangeAdds
+        if (hasOverlap(cursor, cursor + durationMs, [...overlapBase, ...overlapPending])) {
+          cursor += stepMs
+          continue
+        }
+
+        const minute = slotStart.getHours() * 60 + slotStart.getMinutes()
+        const distancePenalty = Math.abs(minute - preferredMinute) / 15
+        const dayPenalty = dayOffset * 4
+        const distinctDayPenalty = preferDistinctDays && workoutDayUsage.has(dayKey) ? 12 : 0
+        const score = dayPenalty + distancePenalty + distinctDayPenalty
+
+        if (!best || score < best.score) {
+          best = {
+            startUtc: slotStart.toISOString(),
+            endUtc: slotEnd.toISOString(),
+            score,
+          }
+        }
+        cursor += stepMs
+      }
+    }
+
+    if (best) return { startUtc: best.startUtc, endUtc: best.endUtc }
+
+    const fallbackStart = new Date(now)
+    fallbackStart.setHours(Math.floor(workStartMin / 60), workStartMin % 60, 0, 0)
+    if (fallbackStart < now) fallbackStart.setDate(fallbackStart.getDate() + 1)
+    const fallbackEnd = new Date(fallbackStart.getTime() + durationMs)
+    return { startUtc: fallbackStart.toISOString(), endUtc: fallbackEnd.toISOString() }
+  }
+
+  const normalized = rawMutations.map((mutation) => {
+    if (mutation.type === 'CREATE_EVENT') {
+      const originalStart = new Date(mutation.startUtc)
+      const originalEnd = new Date(mutation.endUtc)
+      const originalDuration = originalEnd.getTime() - originalStart.getTime()
+      const durationMs = Math.min(Math.max(originalDuration > 0 ? originalDuration : 60 * 60 * 1000, 30 * 60 * 1000), 3 * 60 * 60 * 1000)
+      const isWorkout = mutation.category === 'exercise' || /workout|gym|strength|cardio|chest|back|legs|shoulders|arms/i.test(mutation.title)
+      const slot = findSlot(durationMs, originalStart, undefined, isWorkoutBatchRequest && isWorkout)
+      reserveRange(slot.startUtc, slot.endUtc)
+      if (isWorkoutBatchRequest && isWorkout) {
+        workoutDayUsage.add(new Date(slot.startUtc).toDateString())
+      }
+
+      if (slot.startUtc !== mutation.startUtc || slot.endUtc !== mutation.endUtc) {
+        notes.push(`Adjusted "${mutation.title}" to ${formatDayTime(slot.startUtc, slot.endUtc)} for better timing and conflict safety.`)
+      }
+
+      return {
+        ...mutation,
+        startUtc: slot.startUtc,
+        endUtc: slot.endUtc,
+      }
+    }
+
+    if (mutation.type === 'MOVE_EVENT') {
+      const existing = events.find((event) => event.id === mutation.eventId)
+      if (!existing) {
+        notes.push('Skipped one move because the event could not be found.')
+        return null
+      }
+      if (existing.flexibility === 'fixed') {
+        notes.push(`Skipped moving "${existing.title}" because it is marked fixed.`)
+        return null
+      }
+
+      const proposedStart = new Date(mutation.startUtc)
+      const proposedEnd = new Date(mutation.endUtc)
+      const currentStart = new Date(existing.startUtc)
+      const currentEnd = new Date(existing.endUtc)
+      const durationMs = Math.min(
+        Math.max(proposedEnd.getTime() - proposedStart.getTime() || (currentEnd.getTime() - currentStart.getTime()), 30 * 60 * 1000),
+        3 * 60 * 60 * 1000
+      )
+      const slot = findSlot(durationMs, proposedStart, existing.id, false)
+      reserveRange(slot.startUtc, slot.endUtc)
+
+      if (slot.startUtc !== mutation.startUtc || slot.endUtc !== mutation.endUtc) {
+        notes.push(`Refined move for "${existing.title}" to ${formatDayTime(slot.startUtc, slot.endUtc)}.`)
+      }
+
+      return {
+        ...mutation,
+        startUtc: slot.startUtc,
+        endUtc: slot.endUtc,
+      }
+    }
+
+    return mutation
+  }).filter(Boolean) as AIMutation[]
+
+  return { mutations: normalized, notes }
+}
+
 function MessageContent({ content }: { content: string }) {
   const parts = content.split(/\*\*(.*?)\*\*/g)
   return (
@@ -40,9 +260,10 @@ function MessageContent({ content }: { content: string }) {
 }
 
 export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
-  const { toggleAIPanel, aiMessages, addAIMessage, events, pendingConflict, acceptRescheduleOption, setPendingConflict, createEvent, updateEvent, moveEvent, deleteEvent } = useAppStore()
+  const { toggleAIPanel, aiMessages, addAIMessage, events, pendingConflict, acceptRescheduleOption, setPendingConflict, createEvent, updateEvent, moveEvent, deleteEvent, user } = useAppStore()
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [pendingPlan, setPendingPlan] = useState<PendingMutationPlan | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -70,7 +291,19 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
     setIsTyping(true)
 
     try {
-      const response = await sendAIMessage(text, events, new Date())
+      const response = await sendAIMessage(
+        text,
+        events,
+        new Date(),
+        {
+          timezone: user.timezone,
+          workdayStart: user.workdayStart,
+          workdayEnd: user.workdayEnd,
+          quietStart: user.quietStart,
+          quietEnd: user.quietEnd,
+          travelBufferMinutes: user.travelBufferMinutes,
+        }
+      )
       const assistantMsg: AIMessage = {
         id: `msg-${Date.now()}-ai`,
         role: 'assistant',
@@ -80,7 +313,21 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
       addAIMessage(assistantMsg)
 
       if (response.mutations && response.mutations.length > 0) {
-        response.mutations.forEach(m => {
+        const { mutations: optimizedMutations, notes } = optimizeMutations({
+          rawMutations: response.mutations,
+          events,
+          message: text,
+          now: new Date(),
+          workdayStart: user.workdayStart,
+          workdayEnd: user.workdayEnd,
+          quietStart: user.quietStart,
+          quietEnd: user.quietEnd,
+        })
+
+        const immediate = optimizedMutations.filter((m) => !mutationNeedsConfirmation(m))
+        const gated = optimizedMutations.filter((m) => mutationNeedsConfirmation(m))
+
+        immediate.forEach((m) => {
           try {
             if (m.type === 'CREATE_EVENT') {
               createEvent({
@@ -93,19 +340,49 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
                 hasExternalAttendees: false,
                 attendeeCount: 1,
                 isCompleted: false,
-                aiGenerated: true
+                aiGenerated: true,
               })
             } else if (m.type === 'UPDATE_EVENT') {
               updateEvent(m.eventId, m.updates)
-            } else if (m.type === 'MOVE_EVENT') {
-              moveEvent(m.eventId, m.startUtc, m.endUtc)
-            } else if (m.type === 'DELETE_EVENT') {
-              deleteEvent(m.eventId)
             }
           } catch (e) {
             console.error('Failed to apply mutation:', m, e)
           }
         })
+
+        if (notes.length > 0) {
+          addAIMessage({
+            id: `msg-${Date.now()}-ai-note`,
+            role: 'assistant',
+            content: notes.slice(0, 3).join('\n'),
+            timestamp: new Date().toISOString(),
+          })
+        }
+
+        if (gated.length > 0) {
+          const moveCount = gated.filter((m) => m.type === 'MOVE_EVENT').length
+          const deleteCount = gated.filter((m) => m.type === 'DELETE_EVENT').length
+          const updateCount = gated.filter((m) => m.type === 'UPDATE_EVENT').length
+          const summaryParts: string[] = []
+          if (moveCount > 0) summaryParts.push(`${moveCount} move${moveCount > 1 ? 's' : ''}`)
+          if (updateCount > 0) summaryParts.push(`${updateCount} time update${updateCount > 1 ? 's' : ''}`)
+          if (deleteCount > 0) summaryParts.push(`${deleteCount} deletion${deleteCount > 1 ? 's' : ''}`)
+          const summary = `I prepared ${summaryParts.join(', ')}. Review and confirm before I apply them.`
+
+          setPendingPlan({
+            id: `plan-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            content: summary,
+            mutations: gated,
+          })
+
+          addAIMessage({
+            id: `msg-${Date.now()}-ai-confirm`,
+            role: 'assistant',
+            content: summary,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     } catch (error) {
       const assistantMsg: AIMessage = {
@@ -167,6 +444,36 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
           conflict={pendingConflict}
           onAccept={acceptRescheduleOption}
           onDismiss={() => setPendingConflict(null)}
+        />
+      )}
+
+      {pendingPlan && (
+        <PendingMutationPlanCard
+          plan={pendingPlan}
+          events={events}
+          onCancel={() => setPendingPlan(null)}
+          onApprove={() => {
+            pendingPlan.mutations.forEach((m) => {
+              try {
+                if (m.type === 'MOVE_EVENT') {
+                  moveEvent(m.eventId, m.startUtc, m.endUtc)
+                } else if (m.type === 'UPDATE_EVENT') {
+                  updateEvent(m.eventId, m.updates)
+                } else if (m.type === 'DELETE_EVENT') {
+                  deleteEvent(m.eventId)
+                }
+              } catch (e) {
+                console.error('Failed to apply confirmed mutation:', m, e)
+              }
+            })
+            addAIMessage({
+              id: `msg-${Date.now()}-ai-applied`,
+              role: 'assistant',
+              content: 'Confirmed. I applied the requested schedule changes.',
+              timestamp: new Date().toISOString(),
+            })
+            setPendingPlan(null)
+          }}
         />
       )}
 
@@ -283,6 +590,89 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
         </div>
         <div className="text-[10px] text-text-muted text-center mt-1.5">
           Enter to send · Shift+Enter for newline
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+function PendingMutationPlanCard({
+  plan,
+  events,
+  onApprove,
+  onCancel,
+}: {
+  plan: PendingMutationPlan
+  events: Array<{ id: string; title: string; startUtc: string; endUtc: string }>
+  onApprove: () => void
+  onCancel: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      className="mx-3 my-2 rounded-xl overflow-hidden"
+      style={{ border: '1px solid rgba(255,106,0,0.3)', background: 'rgba(255,106,0,0.08)' }}
+    >
+      <div className="p-3">
+        <div className="text-xs font-semibold text-text-primary mb-1">Review Reschedule Plan</div>
+        <div className="text-[11px] text-text-secondary mb-2">{plan.content}</div>
+        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+          {plan.mutations.map((mutation, idx) => {
+            if (mutation.type === 'MOVE_EVENT') {
+              const eventTitle = events.find((e) => e.id === mutation.eventId)?.title || mutation.eventId
+              return (
+                <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
+                  Move <strong className="text-text-primary">{eventTitle}</strong> to{' '}
+                  <strong className="text-text-primary">{formatDayTime(mutation.startUtc, mutation.endUtc)}</strong>
+                </div>
+              )
+            }
+            if (mutation.type === 'UPDATE_EVENT') {
+              const eventTitle = events.find((e) => e.id === mutation.eventId)?.title || mutation.eventId
+              const hasTimeUpdate = mutation.updates?.startUtc || mutation.updates?.endUtc
+              if (hasTimeUpdate) {
+                const startUtc = mutation.updates.startUtc || events.find((e) => e.id === mutation.eventId)?.startUtc
+                const endUtc = mutation.updates.endUtc || events.find((e) => e.id === mutation.eventId)?.endUtc
+                return (
+                  <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
+                    Update <strong className="text-text-primary">{eventTitle}</strong> to{' '}
+                    <strong className="text-text-primary">{formatDayTime(startUtc, endUtc)}</strong>
+                  </div>
+                )
+              }
+              return (
+                <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
+                  Update <strong className="text-text-primary">{eventTitle}</strong>
+                </div>
+              )
+            }
+            if (mutation.type === 'DELETE_EVENT') {
+              const eventTitle = events.find((e) => e.id === mutation.eventId)?.title || mutation.eventId
+              return (
+                <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
+                  Delete <strong className="text-text-primary">{eventTitle}</strong>
+                </div>
+              )
+            }
+            return null
+          })}
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            onClick={onCancel}
+            className="px-2.5 h-7 rounded-lg text-[11px] font-medium text-text-secondary"
+            style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onApprove}
+            className="px-2.5 h-7 rounded-lg text-[11px] font-semibold text-white"
+            style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}
+          >
+            Approve Changes
+          </button>
         </div>
       </div>
     </motion.div>

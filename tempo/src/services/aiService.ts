@@ -13,6 +13,15 @@ export type AIResponse = {
   mutations?: AIMutation[]
 }
 
+export type AISchedulingPreferences = {
+  timezone: string
+  workdayStart: string
+  workdayEnd: string
+  quietStart: string
+  quietEnd: string
+  travelBufferMinutes: number
+}
+
 type AIChatResponse = {
   content?: string
   message?: string
@@ -24,7 +33,8 @@ type AIChatResponse = {
 export async function sendAIMessage(
   message: string,
   events: CalendarEvent[],
-  now: Date
+  now: Date,
+  preferences?: AISchedulingPreferences
 ): Promise<AIResponse> {
   try {
     const response = await fetch(appConfig.aiChatEndpoint, {
@@ -37,6 +47,7 @@ export async function sendAIMessage(
         events,
         now: now.toISOString(),
         model: appConfig.groqModel,
+        preferences,
       }),
     })
 

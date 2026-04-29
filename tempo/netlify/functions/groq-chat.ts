@@ -13,6 +13,14 @@ type ChatRequest = {
   events?: CalendarEvent[]
   now?: string
   model?: string
+  preferences?: {
+    timezone?: string
+    workdayStart?: string
+    workdayEnd?: string
+    quietStart?: string
+    quietEnd?: string
+    travelBufferMinutes?: number
+  }
 }
 
 export const handler = async (event: { httpMethod?: string; body?: string }) => {
@@ -48,12 +56,20 @@ export const handler = async (event: { httpMethod?: string; body?: string }) => 
   const model = body.model || process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
   const now = body.now || new Date().toISOString()
   const events = body.events || []
+  const preferences = body.preferences || {}
 
   const systemPrompt = [
     'You are Tempo AI, an agentic scheduling assistant embedded in a calendar app called Tempo.',
     'Be concise, helpful, and grounded in the schedule context provided.',
     'You MUST respond in strict JSON format. Your response MUST be a JSON object with two fields: "content" (string) and "mutations" (array).',
     'The "content" is your conversational response to the user. Keep it under 150 words.',
+    'Scheduling rules are strict:',
+    '- Never schedule events during quiet hours.',
+    '- Prefer daytime hours (06:00-21:30 local time) unless user explicitly asks otherwise.',
+    '- Respect workdayStart/workdayEnd for focus/workout/errand scheduling.',
+    '- Avoid overlaps with existing events.',
+    '- If user asks for multiple workouts/events, spread them across the week and avoid clustering all on one day.',
+    '- When proposing MOVE_EVENT, phrase content as a proposal and ask user to confirm before execution.',
     'The "mutations" array contains any scheduling actions you want to perform. Valid action types:',
     '- { "type": "CREATE_EVENT", "title": "string", "startUtc": "ISO8601", "endUtc": "ISO8601", "category": "focus_block|work_meeting|class|exercise|personal|meal|errand|deadline_task|commute|other", "flexibility": "fixed|semi_flexible|flexible" }',
     '- { "type": "MOVE_EVENT", "eventId": "string", "startUtc": "ISO8601", "endUtc": "ISO8601" }',
@@ -66,8 +82,17 @@ export const handler = async (event: { httpMethod?: string; body?: string }) => 
   const scheduleContext = JSON.stringify(
     {
       currentTime: now,
+      userPreferences: {
+        timezone: preferences.timezone,
+        workdayStart: preferences.workdayStart,
+        workdayEnd: preferences.workdayEnd,
+        quietStart: preferences.quietStart,
+        quietEnd: preferences.quietEnd,
+        travelBufferMinutes: preferences.travelBufferMinutes,
+      },
       upcomingEvents: events.slice(0, 30).map((entry) => ({
         title: entry.title,
+        id: entry.id,
         start: entry.startUtc,
         end: entry.endUtc,
         category: entry.category,

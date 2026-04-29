@@ -233,6 +233,27 @@ export function simulateAIResponse(
     return "Based on your schedule, you have free windows tomorrow: 8–9 AM and 2–3 PM. Thursday afternoon also looks open from 3:30 PM onwards. Want me to suggest something productive for those slots?";
   }
   if (lower.includes('add') || lower.includes('schedule') || lower.includes('create')) {
+    if (/(workout|gym|strength|muscle)/.test(lower) && /(multiple|several|few|3|three|week)/.test(lower)) {
+      const day1 = addDays(startOfDay(now), 1)
+      const day2 = addDays(startOfDay(now), 3)
+      const day3 = addDays(startOfDay(now), 5)
+      day1.setHours(7, 30, 0, 0)
+      day2.setHours(12, 0, 0, 0)
+      day3.setHours(18, 0, 0, 0)
+      const day1End = new Date(day1.getTime() + 60 * 60_000)
+      const day2End = new Date(day2.getTime() + 60 * 60_000)
+      const day3End = new Date(day3.getTime() + 60 * 60_000)
+
+      return JSON.stringify({
+        content: 'I drafted a 3-session workout split (push/pull/legs) across the week and avoided overlap windows.',
+        mutations: [
+          { type: 'CREATE_EVENT', title: 'Workout - Push (Chest/Shoulders/Triceps)', startUtc: day1.toISOString(), endUtc: day1End.toISOString(), category: 'exercise', flexibility: 'semi_flexible' },
+          { type: 'CREATE_EVENT', title: 'Workout - Pull (Back/Biceps)', startUtc: day2.toISOString(), endUtc: day2End.toISOString(), category: 'exercise', flexibility: 'semi_flexible' },
+          { type: 'CREATE_EVENT', title: 'Workout - Legs/Core', startUtc: day3.toISOString(), endUtc: day3End.toISOString(), category: 'exercise', flexibility: 'semi_flexible' }
+        ]
+      })
+    }
+
     if (lower.includes('test')) {
       return JSON.stringify({
         content: "I've added the test event.",
@@ -251,6 +272,26 @@ export function simulateAIResponse(
   }
   if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
     return `Hello! I'm your Tempo scheduling assistant. I can help you schedule events, resolve conflicts, optimize your week, or give you productivity insights. What would you like to do today?`;
+  }
+  if (lower.includes('move') || lower.includes('reschedule')) {
+    const candidate = events.find((event) => event.flexibility !== 'fixed')
+    if (candidate) {
+      const nextStart = addDays(new Date(candidate.startUtc), 1)
+      const duration = new Date(candidate.endUtc).getTime() - new Date(candidate.startUtc).getTime()
+      nextStart.setHours(10, 0, 0, 0)
+      const nextEnd = new Date(nextStart.getTime() + Math.max(duration, 60 * 60_000))
+      return JSON.stringify({
+        content: `I can move "${candidate.title}" to a cleaner slot and will ask you to confirm before applying it.`,
+        mutations: [
+          {
+            type: 'MOVE_EVENT',
+            eventId: candidate.id,
+            startUtc: nextStart.toISOString(),
+            endUtc: nextEnd.toISOString()
+          }
+        ]
+      })
+    }
   }
   if (lower.includes('insight') || lower.includes('productiv')) {
     return "This week you've completed 83% of your scheduled events — that's above your monthly average of 76%. Your focus blocks have the highest completion rate. Your peak productivity window appears to be 9 AM–12 PM based on your completion patterns.";
