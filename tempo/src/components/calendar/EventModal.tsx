@@ -142,7 +142,7 @@ export default function EventModal() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.2 }}
-        className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
+        className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh]"
         style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.08)' }}
       >
         {/* Header */}
@@ -158,7 +158,7 @@ export default function EventModal() {
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSave} className="p-5 space-y-4 flex-1 min-h-0 overflow-y-auto">
           {/* Title */}
           <input
             autoFocus

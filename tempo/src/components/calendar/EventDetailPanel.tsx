@@ -4,9 +4,11 @@ import { X, MapPin, Users, Clock, Repeat, Tag, CheckCircle2, Edit3, Trash2, Aler
 import { useAppStore } from '../../stores/appStore'
 import { getCategoryColor, CATEGORY_LABELS, CATEGORY_ICONS, formatDuration } from '../../lib/utils'
 import LocationMap from '../location/LocationMap'
+import { useIsMobile } from '../../lib/useIsMobile'
 
 export default function EventDetailPanel() {
   const { selectedEvent, selectEvent, openEventModal, deleteEvent, completeEvent } = useAppStore()
+  const isMobile = useIsMobile()
 
   if (!selectedEvent) return null
 
@@ -39,14 +41,28 @@ export default function EventDetailPanel() {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.18 }}
-        className="fixed z-50 top-20 left-1/2 -translate-x-1/2 w-80 rounded-2xl shadow-2xl overflow-hidden"
-        style={{ background: '#13131f', border: `1px solid ${color}30` }}
+        className={isMobile
+          ? 'fixed z-50 left-2 right-2 rounded-2xl shadow-2xl overflow-hidden flex flex-col'
+          : 'fixed z-50 top-20 left-1/2 -translate-x-1/2 w-80 rounded-2xl shadow-2xl overflow-hidden flex flex-col'}
+        style={{
+          background: '#13131f',
+          border: `1px solid ${color}30`,
+          ...(isMobile
+            ? {
+                top: 'calc(var(--safe-top) + 56px)',
+                bottom: 'calc(var(--safe-bottom) + 8px)',
+                maxHeight: 'calc(100dvh - var(--safe-top) - var(--safe-bottom) - 64px)',
+              }
+            : {
+                maxHeight: 'min(85dvh, 720px)',
+              }),
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Color bar */}
         <div className="h-1" style={{ background: `linear-gradient(90deg, ${color}, ${color}80)` }} />
 
-        <div className="p-4">
+        <div className="p-4 flex flex-col min-h-0">
           {/* Header */}
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 mt-0.5" style={{ background: `${color}15` }}>
@@ -65,7 +81,7 @@ export default function EventDetailPanel() {
           </div>
 
           {/* Details */}
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-2 min-h-0 overflow-y-auto pr-1">
             <div className="flex items-center gap-2 text-xs text-text-secondary">
               <Clock size={12} className="text-text-muted shrink-0" />
               <span>
@@ -135,7 +151,7 @@ export default function EventDetailPanel() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2 mt-3 pt-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             {!selectedEvent.isCompleted && (
               <button
                 onClick={handleComplete}

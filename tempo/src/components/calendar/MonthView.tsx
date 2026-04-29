@@ -73,7 +73,7 @@ export default function MonthView() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Day-name header */}
       <div
         className="grid grid-cols-7 shrink-0"
@@ -91,7 +91,7 @@ export default function MonthView() {
       </div>
 
       {/* Calendar grid */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-auto">
         <div className="grid grid-cols-7" style={{ minHeight: '100%' }}>
           {days.map((day, index) => {
             const dayEvents = events.filter((ev) => isSameDay(ev.startUtc, day))

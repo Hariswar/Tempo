@@ -137,7 +137,7 @@ export default function WeekView() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Day header row */}
       <div
         className="flex shrink-0"
@@ -173,7 +173,7 @@ export default function WeekView() {
       </div>
 
       {/* Scrollable grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'thin' }}>
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-auto" style={{ scrollbarWidth: 'thin' }}>
         <div className="flex" style={{ minHeight: `${HOUR_HEIGHT * 24}px` }}>
           {/* Time gutter */}
           <div className="shrink-0 relative" style={{ width: 52 }}>

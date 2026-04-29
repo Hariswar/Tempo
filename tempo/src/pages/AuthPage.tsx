@@ -5,11 +5,11 @@ import { EXAMPLE_ACCOUNT } from '../data/exampleAccountSeed'
 
 export default function AuthPage() {
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center p-4" style={{ background: 'var(--bg-base)' }}>
+    <div className="min-h-[100dvh] overflow-y-auto flex items-start sm:items-center justify-center p-4" style={{ background: 'var(--bg-base)' }}>
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md rounded-2xl overflow-hidden"
+        className="w-full max-w-md rounded-2xl overflow-hidden my-3 sm:my-0"
         style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
       >
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>

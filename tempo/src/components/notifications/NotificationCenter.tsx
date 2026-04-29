@@ -21,7 +21,7 @@ export default function NotificationCenter({ onClose }: { onClose: () => void })
 
   return (
     <div
-      className="w-80 rounded-2xl overflow-hidden shadow-2xl"
+      className="w-80 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[calc(100dvh-var(--safe-top)-var(--safe-bottom)-72px)]"
       style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
     >
       {/* Header */}
@@ -59,7 +59,7 @@ export default function NotificationCenter({ onClose }: { onClose: () => void })
       </div>
 
       {/* List */}
-      <div className="max-h-96 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {notifications.length === 0 ? (
           <div className="py-8 text-center">
             <Bell size={24} className="text-text-muted mx-auto mb-2" />
