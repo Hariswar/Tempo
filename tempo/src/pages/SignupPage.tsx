@@ -49,13 +49,17 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] overflow-y-auto flex items-start sm:items-center justify-center p-4" style={{ background: 'var(--bg-base)' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md rounded-2xl overflow-hidden my-3 sm:my-0"
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
-      >
+    <div
+      className="h-[100dvh] overflow-y-auto"
+      style={{ background: 'var(--bg-base)', WebkitOverflowScrolling: 'touch' }}
+    >
+      <div className="min-h-full flex items-start sm:items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md rounded-2xl overflow-hidden my-3 sm:my-0"
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
+        >
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <h1 className="text-lg font-bold text-text-primary">Sign Up</h1>
           <p className="text-xs text-text-muted mt-0.5">Create your Tempo account</p>
@@ -117,41 +121,41 @@ export default function SignupPage() {
                 className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
               />
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label className="block">
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block min-w-0">
                 <span className="text-[11px] text-text-secondary">Work Start</span>
                 <input
                   type="time"
                   value={workdayStart}
                   onChange={(e) => setWorkdayStart(e.target.value)}
-                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
                 />
               </label>
-              <label className="block">
+              <label className="block min-w-0">
                 <span className="text-[11px] text-text-secondary">Work End</span>
                 <input
                   type="time"
                   value={workdayEnd}
                   onChange={(e) => setWorkdayEnd(e.target.value)}
-                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
                 />
               </label>
-              <label className="block">
+              <label className="block min-w-0">
                 <span className="text-[11px] text-text-secondary">Quiet Start</span>
                 <input
                   type="time"
                   value={quietStart}
                   onChange={(e) => setQuietStart(e.target.value)}
-                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
                 />
               </label>
-              <label className="block">
+              <label className="block min-w-0">
                 <span className="text-[11px] text-text-secondary">Quiet End</span>
                 <input
                   type="time"
                   value={quietEnd}
                   onChange={(e) => setQuietEnd(e.target.value)}
-                  className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
                 />
               </label>
             </div>
@@ -197,7 +201,8 @@ export default function SignupPage() {
             <Link to="/auth" style={{ color: 'var(--text-secondary)' }}>Back</Link>
           </p>
         </form>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   )
 }
