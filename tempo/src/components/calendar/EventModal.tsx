@@ -296,26 +296,34 @@ export default function EventModal() {
 
           {/* Repeat */}
           <div>
-            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-1.5">Repeat</label>
-            <select
-              value={normalizeRepeatValue(form.recurrenceRule, form.isRecurring)}
-              onChange={(e) => {
-                const next = e.target.value as RepeatValue
-                setForm((prev) => ({
-                  ...prev,
-                  isRecurring: next !== 'none',
-                  recurrenceRule: next !== 'none' ? next : undefined,
-                }))
-              }}
-              className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              {REPEAT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider block mb-2">Repeat</label>
+            <div className="grid grid-cols-2 gap-2">
+              {REPEAT_OPTIONS.map((option) => {
+                const selected = normalizeRepeatValue(form.recurrenceRule, form.isRecurring) === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      const next = option.value as RepeatValue
+                      setForm((prev) => ({
+                        ...prev,
+                        isRecurring: next !== 'none',
+                        recurrenceRule: next !== 'none' ? next : undefined,
+                      }))
+                    }}
+                    className="px-3 py-2 rounded-xl text-xs font-medium transition-all text-left"
+                    style={{
+                      background: selected ? `${color}15` : 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${selected ? color + '40' : 'rgba(255,255,255,0.07)'}`,
+                      color: selected ? color : '#4a4964',
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Toggles row */}

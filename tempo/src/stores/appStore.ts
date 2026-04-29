@@ -138,7 +138,7 @@ function readScopedState(authUser: AuthUser | null): UserScopedState {
         ? [...EXAMPLE_ACCOUNT_EVENTS]
         : [...MOCK_EVENTS];
     const mergedEvents = isExampleAccount ? mergeMissingExampleSeedEvents(parsedEvents) : parsedEvents;
-    return {
+    const scoped: UserScopedState = {
       events: mergedEvents,
       notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [...MOCK_NOTIFICATIONS],
       user: persistedUser
@@ -153,6 +153,12 @@ function readScopedState(authUser: AuthUser | null): UserScopedState {
           }
         : authUserProfile,
     };
+
+    if (isExampleAccount && mergedEvents.length !== parsedEvents.length) {
+      persistScopedState(authUser.email, scoped);
+    }
+
+    return scoped;
   } catch {
     return defaultScopedState(authUser);
   }
