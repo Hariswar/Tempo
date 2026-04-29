@@ -125,11 +125,12 @@ const CORE_STEPS: TutorialStep[] = [
     id: 'calendar-event-time',
     title: 'Start and End Time',
     route: '/',
-    targetIds: ['event-modal-time-start'],
+    targetIds: ['event-modal-time-section', 'event-modal-time-start', 'event-modal-time-end'],
     description:
       'Time fields define duration and placement on the calendar.',
     instructions: [
-      'Tap the highlighted Start field.',
+      'Use the highlighted time block that contains both Start and End.',
+      'Tap the Start field first.',
       'Tap the End field as well.',
       'Set times that reflect the real event duration.',
     ],
