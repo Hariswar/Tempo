@@ -883,7 +883,7 @@ export default function TutorialCoach() {
             onClick={goPrev}
             disabled={stepIndex === 0}
             className="px-3 h-8 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 disabled:opacity-40"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}
+            style={{ background: 'var(--input-bg)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}
           >
             <ChevronLeft size={13} />
             Back

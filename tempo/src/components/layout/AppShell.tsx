@@ -162,9 +162,9 @@ export default function AppShell() {
           <div
             className="rounded-xl px-3 py-2.5 flex items-center gap-2"
             style={{
-              background: 'rgba(19,19,31,0.95)',
+              background: 'var(--bg-card)',
               border: '1px solid rgba(255,106,0,0.35)',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
+              boxShadow: 'var(--shadow-lg)',
             }}
           >
             <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(255,106,0,0.18)' }}>

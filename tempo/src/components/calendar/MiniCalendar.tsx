@@ -36,13 +36,23 @@ export default function MiniCalendar() {
     <div className="text-xs select-none">
       {/* Month header */}
       <div className="flex items-center justify-between mb-2">
-        <button onClick={prevMonth} className="p-1 rounded-md hover:bg-white/5 transition-colors">
+        <button
+          onClick={prevMonth}
+          className="p-1 rounded-md transition-colors"
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
           <ChevronLeft size={12} className="text-text-muted" />
         </button>
         <span className="text-[11px] font-semibold text-text-secondary">
           {format(displayDate, 'MMM yyyy')}
         </span>
-        <button onClick={nextMonth} className="p-1 rounded-md hover:bg-white/5 transition-colors">
+        <button
+          onClick={nextMonth}
+          className="p-1 rounded-md transition-colors"
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
           <ChevronRight size={12} className="text-text-muted" />
         </button>
       </div>
@@ -71,7 +81,7 @@ export default function MiniCalendar() {
               className={cn(
                 'mini-cal-day transition-colors',
                 !isCurrentMonth && 'opacity-25',
-                !isTodayDate && !isSelected && 'hover:bg-white/5',
+                !isTodayDate && !isSelected && '',
                 isTodayDate && 'today',
                 isSelected && !isTodayDate && 'selected',
                 hasEvents && !isTodayDate && 'has-event'

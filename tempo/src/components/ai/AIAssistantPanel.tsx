@@ -32,7 +32,7 @@ function MessageContent({ content }: { content: string }) {
     <span>
       {parts.map((part, i) =>
         i % 2 === 1
-          ? <strong key={i} className="font-semibold text-white">{part}</strong>
+          ? <strong key={i} className="font-semibold text-text-primary">{part}</strong>
           : <span key={i}>{part}</span>
       )}
     </span>
@@ -138,15 +138,15 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       className="fixed right-0 top-0 bottom-0 z-40 flex flex-col shadow-2xl"
       style={{
-        background: '#0c0c18',
-        borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--sidebar-bg)',
+        borderLeft: isMobile ? 'none' : '1px solid var(--border-subtle)',
         width: isMobile ? '100%' : 320,
         paddingTop: isMobile ? 'var(--safe-top)' : 0,
         paddingBottom: isMobile ? 'calc(56px + var(--safe-bottom))' : 0,
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 h-14 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center justify-between px-4 h-14 shrink-0" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ff6a00, #ff8a00)' }}>
             <Sparkles size={13} className="text-white" />
@@ -156,7 +156,7 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
             <div className="text-[10px] text-text-muted leading-none mt-0.5">Agentic Scheduler</div>
           </div>
         </div>
-        <button onClick={toggleAIPanel} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+        <button onClick={toggleAIPanel} className="p-1.5 rounded-lg transition-colors" onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
           <X size={14} className="text-text-muted" />
         </button>
       </div>
@@ -247,7 +247,7 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
                 key={p}
                 onClick={() => sendMessage(p)}
                 className="px-2.5 py-1 rounded-lg text-[11px] text-text-secondary hover:text-text-primary transition-colors"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
               >
                 {p}
               </button>
@@ -257,10 +257,10 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
       )}
 
       {/* Input */}
-      <div className="p-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="p-3 shrink-0" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <div
           className="flex items-end gap-2 rounded-xl p-2"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
         >
           <textarea
             ref={inputRef}

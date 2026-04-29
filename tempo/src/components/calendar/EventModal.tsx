@@ -143,17 +143,17 @@ export default function EventModal() {
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.2 }}
         className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh]"
-        style={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <div className="flex items-center gap-2.5">
             <div className="w-2 h-2 rounded-full" style={{ background: color }} />
             <span className="text-sm font-semibold text-text-primary">
               {isEditing ? 'Edit Event' : 'New Event'}
             </span>
           </div>
-          <button onClick={closeEventModal} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+          <button onClick={closeEventModal} className="p-1.5 rounded-lg transition-colors" onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
             <X size={15} className="text-text-muted" />
           </button>
         </div>
@@ -167,7 +167,7 @@ export default function EventModal() {
             onChange={(e) => set('title', e.target.value)}
             placeholder="Event title…"
             className="w-full bg-transparent text-text-primary text-lg font-semibold placeholder:text-text-muted outline-none border-b pb-2 transition-colors"
-            style={{ borderColor: 'rgba(255,255,255,0.08)', caretColor: color }}
+            style={{ borderColor: 'var(--input-border)', caretColor: color }}
           />
           {!form.title?.trim() && <p className="text-[11px] text-text-muted">Blank title will default on save.</p>}
 
@@ -186,9 +186,9 @@ export default function EventModal() {
                     onClick={() => set('category', cat)}
                     className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
                     style={{
-                      background: selected ? `${c}25` : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${selected ? c + '50' : 'rgba(255,255,255,0.08)'}`,
-                      color: selected ? c : '#4a4964',
+                      background: selected ? `${c}25` : 'var(--input-bg)',
+                      border: `1px solid ${selected ? c + '50' : 'var(--input-border)'}`,
+                      color: selected ? c : 'var(--text-muted)',
                     }}
                   >
                     <span>{CATEGORY_ICONS[cat]}</span>
@@ -209,7 +209,7 @@ export default function EventModal() {
                 value={toLocalDateTimeInput(form.startUtc!)}
                 onChange={(e) => set('startUtc', fromLocalDateTimeInput(e.target.value))}
                 className="w-full min-w-0 px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
               />
             </div>
             <div className="min-w-0">
@@ -220,7 +220,7 @@ export default function EventModal() {
                 value={toLocalDateTimeInput(form.endUtc!)}
                 onChange={(e) => set('endUtc', fromLocalDateTimeInput(e.target.value))}
                 className="w-full min-w-0 px-3 py-2 rounded-xl text-xs text-text-primary outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
               />
             </div>
           </div>
@@ -237,11 +237,11 @@ export default function EventModal() {
                   onClick={() => set('flexibility', value)}
                   className="flex flex-col items-center py-2 px-2 rounded-xl text-center transition-all"
                   style={{
-                    background: form.flexibility === value ? `${color}15` : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${form.flexibility === value ? color + '40' : 'rgba(255,255,255,0.07)'}`,
+                    background: form.flexibility === value ? `${color}15` : 'var(--bg-faded)',
+                    border: `1px solid ${form.flexibility === value ? color + '40' : 'var(--input-border)'}`,
                   }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: form.flexibility === value ? color : '#4a4964' }}>{label}</span>
+                  <span className="text-xs font-semibold" style={{ color: form.flexibility === value ? color : 'var(--text-muted)' }}>{label}</span>
                   <span className="text-[10px] text-text-muted mt-0.5">{desc}</span>
                 </button>
               ))}
@@ -258,7 +258,7 @@ export default function EventModal() {
               placeholder="Add notes…"
               rows={2}
               className="w-full px-3 py-2 rounded-xl text-xs text-text-primary outline-none resize-none placeholder:text-text-muted"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
             />
           </div>
 
@@ -269,9 +269,9 @@ export default function EventModal() {
               data-tutorial-id="event-modal-location"
               onClick={() => setShowLocationPicker(!showLocationPicker)}
               className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs text-text-secondary transition-colors"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+              style={{ background: 'var(--bg-faded)', border: '1px solid var(--border-subtle)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-faded)'}
             >
               <MapPin size={13} className="text-text-muted shrink-0" />
               <span>
@@ -280,7 +280,7 @@ export default function EventModal() {
             </button>
             
             {showLocationPicker && (
-              <div className="mt-2 pt-2 border-t border-white/10">
+              <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
                 <LocationPicker
                   value={form.locationLabel || locationCoords}
                   onChange={(coords, name) => {
@@ -314,9 +314,9 @@ export default function EventModal() {
                     }}
                     className="px-3 py-2 rounded-xl text-xs font-medium transition-all text-left"
                     style={{
-                      background: selected ? `${color}15` : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${selected ? color + '40' : 'rgba(255,255,255,0.07)'}`,
-                      color: selected ? color : '#4a4964',
+                      background: selected ? `${color}15` : 'var(--bg-faded)',
+                      border: `1px solid ${selected ? color + '40' : 'var(--input-border)'}`,
+                      color: selected ? color : 'var(--text-muted)',
                     }}
                   >
                     {option.label}
@@ -337,7 +337,7 @@ export default function EventModal() {
               />
               <div
                 className="w-8 h-4 rounded-full relative transition-colors"
-                style={{ background: form.hasExternalAttendees ? color : 'rgba(255,255,255,0.1)' }}
+                style={{ background: form.hasExternalAttendees ? color : 'var(--border-medium)' }}
               >
                 <div className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform" style={{ left: form.hasExternalAttendees ? 17 : 2 }} />
               </div>
@@ -371,7 +371,9 @@ export default function EventModal() {
             <button
               type="button"
               onClick={closeEventModal}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-text-secondary hover:bg-white/5 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-text-secondary transition-colors"
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               Cancel
             </button>

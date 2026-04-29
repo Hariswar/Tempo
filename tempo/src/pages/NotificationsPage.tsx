@@ -96,11 +96,13 @@ function NotificationRow({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
       onClick={onRead}
-      className="w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-white/3"
+      className="w-full text-left flex items-start gap-3 px-4 py-3 transition-colors"
       style={{
         borderBottom: '1px solid var(--border-subtle)',
         opacity: notif.read ? 0.55 : 1,
       }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
     >
       <div
         className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"

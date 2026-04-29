@@ -111,7 +111,7 @@ export default function SignupPage() {
             </div>
           </label>
 
-          <div className="rounded-xl p-3 space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-subtle)' }}>
+          <div className="rounded-xl p-3 space-y-3" style={{ background: 'var(--bg-faded)', border: '1px solid var(--border-subtle)' }}>
             <div className="text-xs font-semibold text-text-primary">Scheduling Preferences</div>
             <label className="block">
               <span className="text-[11px] text-text-secondary">Timezone</span>
@@ -121,17 +121,14 @@ export default function SignupPage() {
                 className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
               />
             </label>
-            <div
-              className="grid gap-2"
-              style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))' }}
-            >
+            <div className="grid grid-cols-2 gap-2">
               <label className="block min-w-0">
                 <span className="text-[11px] text-text-secondary">Work Start</span>
                 <input
                   type="time"
                   value={workdayStart}
                   onChange={(e) => setWorkdayStart(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-7 sm:h-9 rounded-lg px-1.5 sm:px-3 text-[10px] sm:text-xs tempo-input signup-time-input"
                 />
               </label>
               <label className="block min-w-0">
@@ -140,7 +137,7 @@ export default function SignupPage() {
                   type="time"
                   value={workdayEnd}
                   onChange={(e) => setWorkdayEnd(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-7 sm:h-9 rounded-lg px-1.5 sm:px-3 text-[10px] sm:text-xs tempo-input signup-time-input"
                 />
               </label>
               <label className="block min-w-0">
@@ -149,7 +146,7 @@ export default function SignupPage() {
                   type="time"
                   value={quietStart}
                   onChange={(e) => setQuietStart(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-7 sm:h-9 rounded-lg px-1.5 sm:px-3 text-[10px] sm:text-xs tempo-input signup-time-input"
                 />
               </label>
               <label className="block min-w-0">
@@ -158,7 +155,7 @@ export default function SignupPage() {
                   type="time"
                   value={quietEnd}
                   onChange={(e) => setQuietEnd(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
+                  className="mt-1 w-full min-w-0 h-7 sm:h-9 rounded-lg px-1.5 sm:px-3 text-[10px] sm:text-xs tempo-input signup-time-input"
                 />
               </label>
             </div>

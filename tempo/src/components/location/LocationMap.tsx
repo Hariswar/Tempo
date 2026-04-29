@@ -58,7 +58,7 @@ export default function LocationMap({
   if (!coordinates) {
     return (
       <div className="w-full h-64 rounded-lg flex items-center justify-center" 
-        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}>
         <div className="text-center">
           <MapPin size={32} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -74,7 +74,7 @@ export default function LocationMap({
       <div 
         ref={mapContainerRef}
         className="w-full h-64 rounded-lg overflow-hidden flex items-center justify-center"
-        style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)' }}
+        style={{ border: '1px solid var(--input-border)', background: 'var(--bg-faded)' }}
       >
         <div className="text-center">
           <MapPin size={32} className="mx-auto mb-2" style={{ color: 'var(--accent-1)' }} />

@@ -334,7 +334,7 @@ html.light .event-card {
 /* ── Light mode — text overrides for light on dark elements ──── */
 html.light .text-white\/40 { color: rgba(0,0,0,0.4) !important; }
 html.light .text-white\/30 { color: rgba(0,0,0,0.3) !important; }
-hmtl.light .border-white\/4 { border-color: rgba(0,0,0,0.04) !important; }
+html.light .border-white\/4 { border-color: rgba(0,0,0,0.04) !important; }
 
 /* ── Leaflet map theme customization ────────────────────────── */
 .leaflet-container {
@@ -425,5 +425,22 @@ html.light .leaflet-tile-pane {
     width: 32px;
     height: 32px;
     font-size: 13px;
+  }
+
+  .signup-time-input {
+    font-size: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .signup-time-input::-webkit-date-and-time-value {
+    min-height: 0;
+    text-align: left;
+  }
+
+  .signup-time-input::-webkit-calendar-picker-indicator {
+    margin: 0;
+    padding: 0;
+    transform: scale(0.9);
+    transform-origin: right center;
   }
 }

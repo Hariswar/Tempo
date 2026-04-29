@@ -45,7 +45,7 @@ export default function EventDetailPanel() {
           ? 'fixed z-50 left-2 right-2 rounded-2xl shadow-2xl overflow-hidden flex flex-col'
           : 'fixed z-50 top-20 left-1/2 -translate-x-1/2 w-80 rounded-2xl shadow-2xl overflow-hidden flex flex-col'}
         style={{
-          background: '#13131f',
+          background: 'var(--bg-card)',
           border: `1px solid ${color}30`,
           ...(isMobile
             ? {
@@ -75,7 +75,12 @@ export default function EventDetailPanel() {
               </h3>
               <span className="text-[11px] font-medium" style={{ color }}>{CATEGORY_LABELS[selectedEvent.category]}</span>
             </div>
-            <button onClick={() => selectEvent(null)} className="p-1 rounded-lg hover:bg-white/5">
+            <button
+              onClick={() => selectEvent(null)}
+              className="p-1 rounded-lg transition-colors"
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
               <X size={13} className="text-text-muted" />
             </button>
           </div>
@@ -137,21 +142,21 @@ export default function EventDetailPanel() {
             )}
 
             {selectedEvent.deadlineUtc && (
-              <div className="flex items-center gap-2 text-xs" style={{ color: '#ef4444' }}>
+              <div className="flex items-center gap-2 text-xs text-red-500">
                 <AlertCircle size={12} className="shrink-0" />
                 <span>Due {format(new Date(selectedEvent.deadlineUtc), 'MMM d, h:mm a')}</span>
               </div>
             )}
 
             {selectedEvent.description && (
-              <p className="text-xs text-text-muted leading-relaxed pt-1 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <p className="text-xs text-text-muted leading-relaxed pt-1 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
                 {selectedEvent.description}
               </p>
             )}
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 mt-3 pt-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2 mt-3 pt-3 shrink-0" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             {!selectedEvent.isCompleted && (
               <button
                 onClick={handleComplete}
@@ -163,7 +168,9 @@ export default function EventDetailPanel() {
             )}
             <button
               onClick={handleEdit}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/5 text-text-secondary"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors text-text-secondary"
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <Edit3 size={12} />
               Edit

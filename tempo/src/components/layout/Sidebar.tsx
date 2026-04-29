@@ -93,7 +93,9 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors ml-auto"
+            className="p-1.5 rounded-lg transition-colors ml-auto"
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <X size={16} className="text-text-muted" />
           </button>

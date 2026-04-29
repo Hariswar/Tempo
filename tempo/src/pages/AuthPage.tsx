@@ -30,7 +30,7 @@ export default function AuthPage() {
           <Link
             to="/signup"
             className="w-full h-11 rounded-lg text-sm font-semibold inline-flex items-center justify-center gap-2"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+            style={{ background: 'var(--input-bg)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
           >
             <UserPlus size={15} />
             Create Account
