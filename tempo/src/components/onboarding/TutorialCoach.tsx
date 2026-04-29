@@ -20,6 +20,7 @@ type TutorialStep = {
   title: string
   route: string
   targetIds: string[]
+  pageOverview?: boolean
   description: string
   instructions: string[]
   requirementLabel: string
@@ -101,7 +102,7 @@ const CORE_STEPS: TutorialStep[] = [
     instructions: [
       'In the event modal, tap the highlighted title field.',
       'Type a clear event name (for example: Study Session).',
-      'The Create button stays disabled until this field has text.',
+      'If you leave it blank, Tempo will auto-assign a default title on save.',
     ],
     requirementLabel: 'Type a title in the highlighted field.',
     isComplete: ({ progress }) => progress.eventTitleEntered,
@@ -178,7 +179,7 @@ const CORE_STEPS: TutorialStep[] = [
       'Now finalize and save the event. This confirms event creation works correctly for the current logged-in user.',
     instructions: [
       'If the modal is closed, tap New to open it again.',
-      'If title is empty, fill the highlighted title field first.',
+      'If title is empty, Tempo will create it with a default title, but naming it now is recommended.',
       'Then tap the highlighted Create Event button.',
       'After save, the event should appear in your calendar and this step completes.',
     ],
@@ -187,45 +188,49 @@ const CORE_STEPS: TutorialStep[] = [
   },
   {
     id: 'ai-assistant',
-    title: 'AI Assistant Access',
+    title: 'AI Assistant: How to Use It',
     route: '/',
     targetIds: ['header-ai-toggle', 'mobile-ai-toggle', 'sidebar-ai-toggle'],
     description:
-      'The AI assistant can suggest schedules and resolve conflicts. You should know exactly where to open it.',
+      'Tempo AI is your scheduling co-pilot. Use it for conflict resolution, free-time checks, and schedule optimization based on your current events.',
     instructions: [
-      'Tap the highlighted AI control (header, bottom nav, or sidebar).',
-      'The assistant panel should open.',
-      'You can close it after confirming it opens correctly.',
+      'Tap the highlighted AI control (header, bottom nav, or sidebar) to open the panel.',
+      'Inside the panel, ask practical questions like "When am I free today?" or "Optimize my schedule".',
+      'Use quick actions for common tasks, or type your own prompt for custom planning help.',
+      'When a conflict banner appears, review suggested slots before accepting changes.',
     ],
-    requirementLabel: 'Open the AI assistant panel once.',
+    requirementLabel: 'Open the AI assistant panel once (then review its controls).',
     isComplete: ({ progress }) => progress.aiOpened,
   },
   {
     id: 'notification-panel',
-    title: 'Quick Notifications Panel',
+    title: 'Quick Notifications Panel (Top Right)',
     route: '/',
     targetIds: ['header-notifications'],
     description:
-      'The top-right bell opens the quick notification panel. It is separate from the full Notifications page.',
+      'This panel is your fast inbox. It is designed for quick checks while staying on the current page, especially while planning in Calendar.',
     instructions: [
       'Tap the highlighted bell in the top-right header.',
-      'This opens the quick notification panel.',
-      'Use this for fast checks without leaving Calendar.',
+      'Review unread items and urgency indicators.',
+      'Use this panel when you need quick context without leaving Calendar.',
+      'For deeper review and full history, use the Notifications page next.',
     ],
     requirementLabel: 'Tap the highlighted top-right bell button.',
     isComplete: ({ progress }) => hasClicked(progress, 'header-notifications'),
   },
   {
     id: 'notification-page',
-    title: 'Notifications Page',
+    title: 'Notifications Page: Action Center',
     route: '/notifications',
     targetIds: ['notifications-page-first-item', 'notifications-page-list'],
+    pageOverview: true,
     description:
-      'The full Notifications page is for detailed review and deeper actions. Notification items can route you directly to relevant app pages.',
+      'This is your full notification dashboard. Each item is actionable and can route you directly to related events, conflicts, or pages.',
     instructions: [
-      'Open the Notifications page.',
-      'Tap a notification item if one exists.',
-      'If there are none, tap inside the highlighted notifications area.',
+      'Open the Notifications page and review item types (conflicts, reminders, insights, AI).',
+      'Tap a notification item to follow its route and take action.',
+      'Use this page to process everything in one place instead of only quick-checking the bell panel.',
+      'If there are no items yet, tap inside the notifications list area to continue.',
     ],
     requirementLabel: 'Interact with the Notifications page content area.',
     isComplete: ({ progress, notificationsCount }) =>
@@ -236,30 +241,34 @@ const CORE_STEPS: TutorialStep[] = [
   },
   {
     id: 'insights-page',
-    title: 'Insights Page',
+    title: 'Insights Dashboard',
     route: '/insights',
     targetIds: ['insights-title'],
+    pageOverview: true,
     description:
-      'Insights summarizes completion, trends, and productivity patterns to help plan better schedules.',
+      'The Insights dashboard explains how your time is actually being used. It helps you spot patterns and improve planning decisions week-to-week.',
     instructions: [
-      'Navigate to the Insights page.',
-      'Review the highlighted page title section.',
-      'This is where analytics and planning metrics live.',
+      'Navigate to Insights and scan completion rate, streaks, and recent productivity trend.',
+      'Use category breakdowns and heatmaps to see where time is concentrated.',
+      'Treat this as feedback for adjusting work blocks, meetings, and focus windows.',
+      'This page is your analytics dashboard for schedule quality.',
     ],
     requirementLabel: 'Open the Insights page.',
     isComplete: ({ progress }) => hasVisited(progress, '/insights'),
   },
   {
     id: 'settings-page',
-    title: 'Settings Page',
+    title: 'Settings and Preference Controls',
     route: '/settings',
     targetIds: ['settings-title'],
+    pageOverview: true,
     description:
-      'Settings controls preferences for schedule behavior, reminders, and account-level defaults.',
+      'Settings defines default behavior across Tempo, including reminder behavior, scheduling preferences, and account-level controls.',
     instructions: [
-      'Navigate to the Settings page.',
-      'Review the highlighted page title section.',
-      'This is where long-term app behavior is configured.',
+      'Navigate to Settings and review profile, schedule, and notification sections.',
+      'Use these controls to tune how aggressive reminders and suggestions should be.',
+      'When behavior feels off, this is the first place to calibrate your defaults.',
+      'Think of Settings as your long-term control panel.',
     ],
     requirementLabel: 'Open the Settings page.',
     isComplete: ({ progress }) => hasVisited(progress, '/settings'),
@@ -638,6 +647,7 @@ export default function TutorialCoach() {
 
   const inRoute = location.pathname === step.route
   const holePadding = 8
+  const disableBackdrop = Boolean(step.pageOverview)
   const hole = target
     ? {
         top: Math.max(0, target.rect.top - holePadding),
@@ -660,69 +670,73 @@ export default function TutorialCoach() {
 
   return (
     <>
-      {hole ? (
-        <>
+      {!disableBackdrop &&
+        (hole ? (
+          <>
+            <div
+              className="fixed z-[85]"
+              style={{
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: hole.top,
+                background: 'rgba(0,0,0,0.72)',
+                backdropFilter: 'blur(1px)',
+              }}
+            />
+            <div
+              className="fixed z-[85]"
+              style={{
+                top: hole.top,
+                left: 0,
+                width: hole.left,
+                height: hole.height,
+                background: 'rgba(0,0,0,0.72)',
+                backdropFilter: 'blur(1px)',
+              }}
+            />
+            <div
+              className="fixed z-[85]"
+              style={{
+                top: hole.top,
+                left: hole.left + hole.width,
+                right: 0,
+                height: hole.height,
+                background: 'rgba(0,0,0,0.72)',
+                backdropFilter: 'blur(1px)',
+              }}
+            />
+            <div
+              className="fixed z-[85]"
+              style={{
+                top: hole.top + hole.height,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.72)',
+                backdropFilter: 'blur(1px)',
+              }}
+            />
+          </>
+        ) : (
           <div
-            className="fixed z-[85]"
-            style={{
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: hole.top,
-              background: 'rgba(0,0,0,0.72)',
-              backdropFilter: 'blur(1px)',
-            }}
+            className="fixed inset-0 z-[85] pointer-events-none"
+            style={{ background: 'rgba(0,0,0,0.66)', backdropFilter: 'blur(1px)' }}
           />
-          <div
-            className="fixed z-[85]"
-            style={{
-              top: hole.top,
-              left: 0,
-              width: hole.left,
-              height: hole.height,
-              background: 'rgba(0,0,0,0.72)',
-              backdropFilter: 'blur(1px)',
-            }}
-          />
-          <div
-            className="fixed z-[85]"
-            style={{
-              top: hole.top,
-              left: hole.left + hole.width,
-              right: 0,
-              height: hole.height,
-              background: 'rgba(0,0,0,0.72)',
-              backdropFilter: 'blur(1px)',
-            }}
-          />
-          <div
-            className="fixed z-[85]"
-            style={{
-              top: hole.top + hole.height,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0,0,0,0.72)',
-              backdropFilter: 'blur(1px)',
-            }}
-          />
-          <div
-            className="fixed z-[86] rounded-xl pointer-events-none"
-            style={{
-              top: hole.top,
-              left: hole.left,
-              width: hole.width,
-              height: hole.height,
-              border: '2px solid rgba(255,138,0,0.9)',
-              boxShadow: '0 0 0 2px rgba(255,106,0,0.25), 0 0 26px rgba(255,106,0,0.45)',
-              animation: 'pulse-glow 1.8s ease-in-out infinite',
-            }}
-          />
-        </>
-      ) : (
+        ))}
+
+      {hole && (
         <div
-          className="fixed inset-0 z-[85] pointer-events-none"
-          style={{ background: 'rgba(0,0,0,0.66)', backdropFilter: 'blur(1px)' }}
+          className="fixed z-[86] rounded-xl pointer-events-none"
+          style={{
+            top: hole.top,
+            left: hole.left,
+            width: hole.width,
+            height: hole.height,
+            border: '2px solid rgba(255,138,0,0.9)',
+            boxShadow: '0 0 0 2px rgba(255,106,0,0.25), 0 0 26px rgba(255,106,0,0.45)',
+            animation: 'pulse-glow 1.8s ease-in-out infinite',
+          }}
         />
       )}
 
