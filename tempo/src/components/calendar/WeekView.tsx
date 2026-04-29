@@ -10,7 +10,7 @@ import { getCategoryColor, minuteSinceStartOfDay, isSameDay, cn } from '../../li
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const HOUR_HEIGHT = 64 // px per hour
-const START_HOUR = 6
+const START_HOUR = 0
 
 interface ColumnEvent extends CalendarEvent {
   column: number
