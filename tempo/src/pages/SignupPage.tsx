@@ -121,14 +121,17 @@ export default function SignupPage() {
                 className="mt-1 w-full h-9 rounded-lg px-3 text-xs tempo-input"
               />
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div
+              className="grid gap-2"
+              style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))' }}
+            >
               <label className="block min-w-0">
                 <span className="text-[11px] text-text-secondary">Work Start</span>
                 <input
                   type="time"
                   value={workdayStart}
                   onChange={(e) => setWorkdayStart(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
                 />
               </label>
               <label className="block min-w-0">
@@ -137,7 +140,7 @@ export default function SignupPage() {
                   type="time"
                   value={workdayEnd}
                   onChange={(e) => setWorkdayEnd(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
                 />
               </label>
               <label className="block min-w-0">
@@ -146,7 +149,7 @@ export default function SignupPage() {
                   type="time"
                   value={quietStart}
                   onChange={(e) => setQuietStart(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
                 />
               </label>
               <label className="block min-w-0">
@@ -155,7 +158,7 @@ export default function SignupPage() {
                   type="time"
                   value={quietEnd}
                   onChange={(e) => setQuietEnd(e.target.value)}
-                  className="mt-1 w-full min-w-0 h-8 rounded-lg px-2 text-[11px] tempo-input"
+                  className="mt-1 w-full min-w-0 h-8 sm:h-9 rounded-lg px-2 sm:px-3 text-[11px] sm:text-xs tempo-input"
                 />
               </label>
             </div>
