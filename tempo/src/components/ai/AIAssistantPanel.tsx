@@ -63,12 +63,7 @@ function formatDayTime(startUtc: string, endUtc: string): string {
 }
 
 function mutationNeedsConfirmation(m: AIMutation): boolean {
-  if (m.type === 'MOVE_EVENT' || m.type === 'DELETE_EVENT') return true
-  if (m.type === 'UPDATE_EVENT') {
-    const keys = Object.keys(m.updates || {})
-    return keys.some((key) => key === 'startUtc' || key === 'endUtc')
-  }
-  return false
+  return m.type === 'CREATE_EVENT' || m.type === 'MOVE_EVENT' || m.type === 'UPDATE_EVENT' || m.type === 'DELETE_EVENT'
 }
 
 function optimizeMutations(params: {
@@ -336,31 +331,7 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
           quietEnd: user.quietEnd,
         })
 
-        const immediate = optimizedMutations.filter((m) => !mutationNeedsConfirmation(m))
         const gated = optimizedMutations.filter((m) => mutationNeedsConfirmation(m))
-
-        immediate.forEach((m) => {
-          try {
-            if (m.type === 'CREATE_EVENT') {
-              createEvent({
-                title: m.title,
-                startUtc: m.startUtc,
-                endUtc: m.endUtc,
-                category: (m.category as any) || 'other',
-                flexibility: (m.flexibility as any) || 'flexible',
-                isRecurring: false,
-                hasExternalAttendees: false,
-                attendeeCount: 1,
-                isCompleted: false,
-                aiGenerated: true,
-              })
-            } else if (m.type === 'UPDATE_EVENT') {
-              updateEvent(m.eventId, m.updates)
-            }
-          } catch (e) {
-            console.error('Failed to apply mutation:', m, e)
-          }
-        })
 
         if (notes.length > 0) {
           addAIMessage({
@@ -372,14 +343,16 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
         }
 
         if (gated.length > 0) {
+          const addCount = gated.filter((m) => m.type === 'CREATE_EVENT').length
           const moveCount = gated.filter((m) => m.type === 'MOVE_EVENT').length
           const deleteCount = gated.filter((m) => m.type === 'DELETE_EVENT').length
           const updateCount = gated.filter((m) => m.type === 'UPDATE_EVENT').length
           const summaryParts: string[] = []
+          if (addCount > 0) summaryParts.push(`${addCount} addition${addCount > 1 ? 's' : ''}`)
           if (moveCount > 0) summaryParts.push(`${moveCount} move${moveCount > 1 ? 's' : ''}`)
-          if (updateCount > 0) summaryParts.push(`${updateCount} time update${updateCount > 1 ? 's' : ''}`)
+          if (updateCount > 0) summaryParts.push(`${updateCount} change${updateCount > 1 ? 's' : ''}`)
           if (deleteCount > 0) summaryParts.push(`${deleteCount} deletion${deleteCount > 1 ? 's' : ''}`)
-          const summary = `I prepared ${summaryParts.join(', ')}. Review and confirm before I apply them.`
+          const summary = `I prepared ${summaryParts.join(', ')}. Review these changes, then tap Approve to apply or Cancel to keep your calendar unchanged.`
 
           setPendingPlan({
             id: `plan-${Date.now()}`,
@@ -469,6 +442,19 @@ export default function AIAssistantPanel({ isMobile }: { isMobile?: boolean }) {
               try {
                 if (m.type === 'MOVE_EVENT') {
                   moveEvent(m.eventId, m.startUtc, m.endUtc)
+                } else if (m.type === 'CREATE_EVENT') {
+                  createEvent({
+                    title: m.title,
+                    startUtc: m.startUtc,
+                    endUtc: m.endUtc,
+                    category: (m.category as any) || 'other',
+                    flexibility: (m.flexibility as any) || 'flexible',
+                    isRecurring: false,
+                    hasExternalAttendees: false,
+                    attendeeCount: 1,
+                    isCompleted: false,
+                    aiGenerated: true,
+                  })
                 } else if (m.type === 'UPDATE_EVENT') {
                   updateEvent(m.eventId, m.updates)
                 } else if (m.type === 'DELETE_EVENT') {
@@ -627,10 +613,18 @@ function PendingMutationPlanCard({
       style={{ border: '1px solid rgba(255,106,0,0.3)', background: 'rgba(255,106,0,0.08)' }}
     >
       <div className="p-3">
-        <div className="text-xs font-semibold text-text-primary mb-1">Review Reschedule Plan</div>
+        <div className="text-xs font-semibold text-text-primary mb-1">Review Planned Changes</div>
         <div className="text-[11px] text-text-secondary mb-2">{plan.content}</div>
         <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
           {plan.mutations.map((mutation, idx) => {
+            if (mutation.type === 'CREATE_EVENT') {
+              return (
+                <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
+                  Add <strong className="text-text-primary">{mutation.title}</strong> on{' '}
+                  <strong className="text-text-primary">{formatDayTime(mutation.startUtc, mutation.endUtc)}</strong>
+                </div>
+              )
+            }
             if (mutation.type === 'MOVE_EVENT') {
               const eventTitle = events.find((e) => e.id === mutation.eventId)?.title || mutation.eventId
               return (
@@ -642,28 +636,30 @@ function PendingMutationPlanCard({
             }
             if (mutation.type === 'UPDATE_EVENT') {
               const eventTitle = events.find((e) => e.id === mutation.eventId)?.title || mutation.eventId
-              const hasTimeUpdate = mutation.updates?.startUtc || mutation.updates?.endUtc
-              if (hasTimeUpdate) {
-                const startUtc = mutation.updates.startUtc || events.find((e) => e.id === mutation.eventId)?.startUtc
-                const endUtc = mutation.updates.endUtc || events.find((e) => e.id === mutation.eventId)?.endUtc
-                return (
-                  <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
-                    Update <strong className="text-text-primary">{eventTitle}</strong> to{' '}
-                    <strong className="text-text-primary">{formatDayTime(startUtc, endUtc)}</strong>
-                  </div>
-                )
+              const updateBits: string[] = []
+              const startUtc = mutation.updates?.startUtc || events.find((e) => e.id === mutation.eventId)?.startUtc
+              const endUtc = mutation.updates?.endUtc || events.find((e) => e.id === mutation.eventId)?.endUtc
+              if (startUtc && endUtc && (mutation.updates?.startUtc || mutation.updates?.endUtc)) {
+                updateBits.push(`time to ${formatDayTime(startUtc, endUtc)}`)
               }
+              if (mutation.updates?.title) updateBits.push(`title to "${mutation.updates.title}"`)
+              if (mutation.updates?.category) updateBits.push(`category to ${mutation.updates.category}`)
+              if (mutation.updates?.locationLabel) updateBits.push(`location to ${mutation.updates.locationLabel}`)
               return (
                 <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
-                  Update <strong className="text-text-primary">{eventTitle}</strong>
+                  Change <strong className="text-text-primary">{eventTitle}</strong>
+                  {updateBits.length > 0 ? `: ${updateBits.join(', ')}` : ''}
                 </div>
               )
             }
             if (mutation.type === 'DELETE_EVENT') {
-              const eventTitle = events.find((e) => e.id === mutation.eventId)?.title || mutation.eventId
+              const eventRef = events.find((e) => e.id === mutation.eventId)
+              const eventTitle = eventRef?.title || mutation.eventId
+              const eventWhen = eventRef ? formatDayTime(eventRef.startUtc, eventRef.endUtc) : null
               return (
                 <div key={`${mutation.type}-${idx}`} className="text-[10px] text-text-secondary">
                   Delete <strong className="text-text-primary">{eventTitle}</strong>
+                  {eventWhen ? ` (${eventWhen})` : ''}
                 </div>
               )
             }
