@@ -73,9 +73,12 @@ function normalizeEmail(email?: string | null): string | null {
   return email ? email.trim().toLowerCase() : null;
 }
 
+function isExampleAccountEmail(email?: string | null): boolean {
+  return normalizeEmail(email) === EXAMPLE_ACCOUNT.email.toLowerCase();
+}
+
 function getInitialSelectedDate(authUser: AuthUser | null, events: CalendarEvent[]): string {
-  const isExampleAccount =
-    authUser?.email?.trim().toLowerCase() === EXAMPLE_ACCOUNT.email.toLowerCase();
+  const isExampleAccount = isExampleAccountEmail(authUser?.email);
   if (isExampleAccount && events.length > 0) {
     return events[0].startUtc;
   }
@@ -102,13 +105,19 @@ function buildStoreUser(authUser: AuthUser | null): User {
 }
 
 function defaultScopedState(authUser: AuthUser | null): UserScopedState {
-  const isExampleAccount =
-    authUser?.email?.trim().toLowerCase() === EXAMPLE_ACCOUNT.email.toLowerCase();
+  const isExampleAccount = isExampleAccountEmail(authUser?.email);
   return {
     events: isExampleAccount ? [...EXAMPLE_ACCOUNT_EVENTS] : [],
     notifications: [],
     user: buildStoreUser(authUser),
   };
+}
+
+function mergeMissingExampleSeedEvents(events: CalendarEvent[]): CalendarEvent[] {
+  const existingIds = new Set(events.map((event) => event.id));
+  const missing = EXAMPLE_ACCOUNT_EVENTS.filter((seedEvent) => !existingIds.has(seedEvent.id));
+  if (missing.length === 0) return events;
+  return [...events, ...missing];
 }
 
 function readScopedState(authUser: AuthUser | null): UserScopedState {
@@ -122,8 +131,15 @@ function readScopedState(authUser: AuthUser | null): UserScopedState {
     const parsed = JSON.parse(raw) as Partial<UserScopedState>;
     const authUserProfile = buildStoreUser(authUser);
     const persistedUser = parsed.user;
+    const isExampleAccount = isExampleAccountEmail(authUser.email);
+    const parsedEvents = Array.isArray(parsed.events)
+      ? parsed.events
+      : isExampleAccount
+        ? [...EXAMPLE_ACCOUNT_EVENTS]
+        : [...MOCK_EVENTS];
+    const mergedEvents = isExampleAccount ? mergeMissingExampleSeedEvents(parsedEvents) : parsedEvents;
     return {
-      events: Array.isArray(parsed.events) ? parsed.events : [...MOCK_EVENTS],
+      events: mergedEvents,
       notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [...MOCK_NOTIFICATIONS],
       user: persistedUser
         ? {
